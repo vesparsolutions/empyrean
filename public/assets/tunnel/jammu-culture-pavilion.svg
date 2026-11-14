@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450">
+  <defs>
+    <radialGradient id="grad-main-jammu-culture-pavilion" cx="50%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#3d1c1a" />
+      <stop offset="85%" stop-color="#170c0c" />
+      <stop offset="100%" stop-color="#050a18" />
+    </radialGradient>
+    <linearGradient id="grad-accent-jammu-culture-pavilion" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b91c1c" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="grad-overlay-jammu-culture-pavilion" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#050a18" stop-opacity="0.95" />
+      <stop offset="45%" stop-color="#050a18" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="transparent" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background base -->
+  <rect width="600" height="450" fill="url(#grad-main-jammu-culture-pavilion)" />
+
+  <!-- Ambient Stage Light Beams -->
+  <g opacity="0.4">
+    <polygon points="60,0 240,0 480,450 180,450" fill="url(#grad-accent-jammu-culture-pavilion)" opacity="0.4" />
+    <polygon points="540,0 360,0 120,450 420,450" fill="#f59e0b" opacity="0.3" />
+  </g>
+
+  <!-- Dynamic concert energy particles & rings -->
+  <g opacity="0.65">
+    <circle cx="300" cy="189" r="168.00000000000003" fill="none" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="6 8" opacity="0.5" />
+    <circle cx="300" cy="189" r="228" fill="none" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3 12" opacity="0.35" />
+    <circle cx="120" cy="112.5" r="3" fill="#ffffff" opacity="0.8" />
+    <circle cx="491.99999999999994" cy="135" r="4" fill="#f59e0b" opacity="0.9" />
+    <circle cx="450" cy="81" r="2.5" fill="#ffffff" opacity="0.7" />
+    <circle cx="180" cy="247.50000000000003" r="3.5" fill="#b91c1c" opacity="0.85" />
+    <circle cx="90" cy="216" r="2" fill="#ef4444" opacity="0.75" />
+    <circle cx="528" cy="234" r="3" fill="#ffffff" opacity="0.8" />
+  </g>
+
+  <!-- Stage Graphic / Silhouette Iconography -->
+  <g transform="translate(300, 189)" opacity="0.9">
+    <path d="M 0 -36 L 9 -12 L 35 -12 L 14 4 L 22 28 L 0 14 L -22 28 L -14 4 L -35 -12 L -9 -12 Z" fill="url(#grad-accent-jammu-culture-pavilion)" />
+    <circle cx="0" cy="0" r="9" fill="#ffffff" />
+  </g>
+
+  <!-- Stage Spotlights from bottom -->
+  <path d="M 30 450 L 210 157.5 L 390 157.5 L 570 450 Z" fill="url(#grad-accent-jammu-culture-pavilion)" opacity="0.1" />
+
+  <!-- Bottom Dark Vignette Overlay -->
+  <rect width="600" height="450" fill="url(#grad-overlay-jammu-culture-pavilion)" />
+
+  <!-- Empyrean Fest Watermark Pill -->
+  <g transform="translate(20, 22)">
+    <rect width="108" height="24" rx="12" fill="#071026" fill-opacity="0.85" stroke="#f8c12c" stroke-opacity="0.45" stroke-width="1" />
+    <text x="54" y="16" fill="#f8c12c" font-family="'Marcellus', serif, sans-serif" font-size="10" font-weight="600" text-anchor="middle" letter-spacing="1.5">EMPYREAN</text>
+  </g>
+
+  <!-- Card Category Badge & Title -->
+  <g transform="translate(22, 426)">
+    <text x="0" y="-30" fill="#f59e0b" font-family="'Outfit', sans-serif" font-size="11" font-weight="600" text-transform="uppercase" letter-spacing="2" opacity="0.95">✦ Cultural Exhibition</text>
+    <text x="0" y="-8" fill="#ffffff" font-family="'Cinzel', serif, sans-serif" font-size="20" font-weight="700" letter-spacing="0.5">Dogra Heritage & Crafts</text>
+  </g>
+
+  <!-- Elegant Inner Border -->
+  <rect x="1" y="1" width="598" height="448" fill="none" stroke="#f8c12c" stroke-opacity="0.22" stroke-width="1" rx="8" />
+  <rect x="5" y="5" width="590" height="440" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1" rx="6" />
+</svg>

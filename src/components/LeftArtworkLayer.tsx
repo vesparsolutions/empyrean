@@ -5,20 +5,21 @@ import { ArtworkElement } from './ArtworkElement';
 interface LeftArtworkLayerProps {
   scrollProgress: number;
   prefersReducedMotion?: boolean;
-  deviceType?: 'mobile' | 'tablet' | 'desktop';
-  isMobile?: boolean;
 }
 
 export const LeftArtworkLayer: React.FC<LeftArtworkLayerProps> = ({
   scrollProgress,
   prefersReducedMotion = false,
-  deviceType,
-  isMobile = false,
 }) => {
   return (
     <div
       id="left-artwork-layer"
-      className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
+      className="absolute left-0 bottom-0 pointer-events-none select-none overflow-visible"
+      style={{
+        height: '98%',
+        aspectRatio: '1011 / 682',
+        maxWidth: '54vw',
+      }}
       aria-hidden="true"
     >
       {LEFT_ARTWORK_ELEMENTS.map((el) => (
@@ -27,8 +28,6 @@ export const LeftArtworkLayer: React.FC<LeftArtworkLayerProps> = ({
           config={el}
           scrollProgress={scrollProgress}
           prefersReducedMotion={prefersReducedMotion}
-          deviceType={deviceType}
-          isMobile={isMobile}
         />
       ))}
     </div>

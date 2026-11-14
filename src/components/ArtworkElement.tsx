@@ -5,34 +5,16 @@ interface ArtworkElementProps {
   config: ArtworkElementConfig;
   scrollProgress: number; // 0 to 1
   prefersReducedMotion?: boolean;
-  deviceType?: 'mobile' | 'tablet' | 'desktop';
-  isMobile?: boolean;
 }
 
 export const ArtworkElement: React.FC<ArtworkElementProps> = ({
   config,
   scrollProgress,
   prefersReducedMotion = false,
-  deviceType,
-  isMobile = false,
 }) => {
-  const { desktop, tablet, mobile, scrollAnimation } = config;
+  const { scrollAnimation } = config;
 
-  // Active positioning based on viewport deviceType
-  const activeDevice = deviceType || (isMobile ? 'mobile' : 'desktop');
-  const pos =
-    activeDevice === 'mobile' && mobile
-      ? mobile
-      : activeDevice === 'tablet' && tablet
-      ? tablet
-      : desktop;
-
-  // Check if hidden on mobile
-  if (activeDevice === 'mobile' && mobile?.hidden) {
-    return null;
-  }
-
-  // Calculate transform from scroll progress
+  // Calculate transform and opacity dynamically from scroll progress
   let transform = '';
   let opacity = 1;
 
@@ -40,17 +22,20 @@ export const ArtworkElement: React.FC<ArtworkElementProps> = ({
     transform = 'none';
     opacity = 1;
   } else {
-    // Parallax displacement using viewport-relative units (vw and vh) for consistent proportional speed
+    // Parallax displacement using viewport-relative units (vw and vh)
+    // Left elements move negative X (left) and positive Y (down -> bottom-left corner)
+    // Right elements move positive X (right) and positive Y (down -> bottom-right corner)
     const tx = scrollProgress * scrollAnimation.xVw;
-    const ty = scrollProgress * (scrollAnimation.yVh || 0);
-    const rot = (desktop.rotate || 0) + scrollProgress * (scrollAnimation.rotateFactor || 0);
-    const scale = 1 - scrollProgress * (1 - (scrollAnimation.scaleFactor || 0.95));
+    const ty = scrollProgress * scrollAnimation.yVh;
+    const rot = scrollProgress * (scrollAnimation.rotateFactor || 0);
+    const scale = 1 - scrollProgress * (1 - (scrollAnimation.scaleFactor || 0.9));
     
     transform = `translate3d(${tx}vw, ${ty}vh, 0) rotate(${rot}deg) scale(${scale})`;
     
-    // Smooth, progressive fade as user scrolls through the hero track (maintains framing presence)
-    const endOpacity = scrollAnimation.opacityEnd ?? 0.2;
-    opacity = Math.max(endOpacity, 1 - Math.pow(scrollProgress, 1.2) * (1 - endOpacity));
+    // Smooth, progressive exit fade towards corners
+    const endOpacity = scrollAnimation.opacityEnd ?? 0;
+    // Fades smoothly to 0 as it exits to corners
+    opacity = Math.max(endOpacity, 1 - Math.pow(scrollProgress, 1.1) * (1 - endOpacity));
   }
 
   return (
@@ -60,30 +45,25 @@ export const ArtworkElement: React.FC<ArtworkElementProps> = ({
       data-side={config.side}
       className="absolute select-none pointer-events-none will-change-transform"
       style={{
-        left: pos.left,
-        right: pos.right,
-        top: pos.top,
-        bottom: pos.bottom,
-        width: pos.width,
-        height: pos.height,
-        maxHeight: pos.maxHeight,
-        maxWidth: pos.maxWidth,
-        aspectRatio: config.aspectRatio,
-        zIndex: pos.zIndex,
-        transformOrigin: pos.origin || desktop.origin || 'center center',
+        left: `${config.leftPercent}%`,
+        top: `${config.topPercent}%`,
+        width: `${config.widthPercent}%`,
+        height: `${config.heightPercent}%`,
+        zIndex: config.zIndex,
+        transformOrigin: config.origin || (config.side === 'left' ? 'bottom left' : 'bottom right'),
         transform,
         opacity,
-        transition: 'opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: 'opacity 0.15s ease-out',
       }}
     >
-      <picture className="w-full h-full block">
+      <picture className={`w-full h-full block ${config.idleAnimation && scrollProgress < 0.05 ? config.idleAnimation : ''}`}>
         <source srcSet={config.webpSrc} type="image/webp" />
         <img
           src={config.src}
           alt={config.alt}
           loading="eager"
           decoding="async"
-          className="w-full h-full object-contain block drop-shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+          className="w-full h-full object-contain block drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]"
           draggable={false}
         />
       </picture>

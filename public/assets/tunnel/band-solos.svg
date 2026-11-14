@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 600" width="450" height="600">
+  <defs>
+    <radialGradient id="grad-main-band-solos" cx="50%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#241445" />
+      <stop offset="85%" stop-color="#0d091a" />
+      <stop offset="100%" stop-color="#050a18" />
+    </radialGradient>
+    <linearGradient id="grad-accent-band-solos" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9333ea" />
+      <stop offset="100%" stop-color="#ec4899" />
+    </linearGradient>
+    <linearGradient id="grad-overlay-band-solos" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#050a18" stop-opacity="0.95" />
+      <stop offset="45%" stop-color="#050a18" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="transparent" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background base -->
+  <rect width="450" height="600" fill="url(#grad-main-band-solos)" />
+
+  <!-- Ambient Stage Light Beams -->
+  <g opacity="0.4">
+    <polygon points="45,0 180,0 360,600 135,600" fill="url(#grad-accent-band-solos)" opacity="0.4" />
+    <polygon points="405,0 270,0 90,600 315,600" fill="#ec4899" opacity="0.3" />
+  </g>
+
+  <!-- Dynamic concert energy particles & rings -->
+  <g opacity="0.65">
+    <circle cx="225" cy="252" r="126.00000000000001" fill="none" stroke="#9333ea" stroke-width="1.5" stroke-dasharray="6 8" opacity="0.5" />
+    <circle cx="225" cy="252" r="171" fill="none" stroke="#ec4899" stroke-width="1" stroke-dasharray="3 12" opacity="0.35" />
+    <circle cx="90" cy="150" r="3" fill="#ffffff" opacity="0.8" />
+    <circle cx="369" cy="180" r="4" fill="#ec4899" opacity="0.9" />
+    <circle cx="337.5" cy="108" r="2.5" fill="#ffffff" opacity="0.7" />
+    <circle cx="135" cy="330" r="3.5" fill="#9333ea" opacity="0.85" />
+    <circle cx="67.5" cy="288" r="2" fill="#a855f7" opacity="0.75" />
+    <circle cx="396" cy="312" r="3" fill="#ffffff" opacity="0.8" />
+  </g>
+
+  <!-- Stage Graphic / Silhouette Iconography -->
+  <g transform="translate(225, 252)" opacity="0.9">
+    <path d="M 0 -36 L 9 -12 L 35 -12 L 14 4 L 22 28 L 0 14 L -22 28 L -14 4 L -35 -12 L -9 -12 Z" fill="url(#grad-accent-band-solos)" />
+    <circle cx="0" cy="0" r="9" fill="#ffffff" />
+  </g>
+
+  <!-- Stage Spotlights from bottom -->
+  <path d="M 22.5 600 L 157.5 210 L 292.5 210 L 427.5 600 Z" fill="url(#grad-accent-band-solos)" opacity="0.1" />
+
+  <!-- Bottom Dark Vignette Overlay -->
+  <rect width="450" height="600" fill="url(#grad-overlay-band-solos)" />
+
+  <!-- Empyrean Fest Watermark Pill -->
+  <g transform="translate(20, 22)">
+    <rect width="108" height="24" rx="12" fill="#071026" fill-opacity="0.85" stroke="#f8c12c" stroke-opacity="0.45" stroke-width="1" />
+    <text x="54" y="16" fill="#f8c12c" font-family="'Marcellus', serif, sans-serif" font-size="10" font-weight="600" text-anchor="middle" letter-spacing="1.5">EMPYREAN</text>
+  </g>
+
+  <!-- Card Category Badge & Title -->
+  <g transform="translate(22, 576)">
+    <text x="0" y="-30" fill="#ec4899" font-family="'Outfit', sans-serif" font-size="11" font-weight="600" text-transform="uppercase" letter-spacing="2" opacity="0.95">✦ Rock Championship</text>
+    <text x="0" y="-8" fill="#ffffff" font-family="'Cinzel', serif, sans-serif" font-size="17" font-weight="700" letter-spacing="0.5">Lead Riffs & Drum Solos</text>
+  </g>
+
+  <!-- Elegant Inner Border -->
+  <rect x="1" y="1" width="448" height="598" fill="none" stroke="#f8c12c" stroke-opacity="0.22" stroke-width="1" rx="8" />
+  <rect x="5" y="5" width="440" height="590" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1" rx="6" />
+</svg>

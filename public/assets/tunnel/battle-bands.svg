@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <radialGradient id="grad-main-battle-bands" cx="50%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#4a1525" />
+      <stop offset="85%" stop-color="#140c1a" />
+      <stop offset="100%" stop-color="#050a18" />
+    </radialGradient>
+    <linearGradient id="grad-accent-battle-bands" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#e11d48" />
+    </linearGradient>
+    <linearGradient id="grad-overlay-battle-bands" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#050a18" stop-opacity="0.95" />
+      <stop offset="45%" stop-color="#050a18" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="transparent" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background base -->
+  <rect width="500" height="500" fill="url(#grad-main-battle-bands)" />
+
+  <!-- Ambient Stage Light Beams -->
+  <g opacity="0.4">
+    <polygon points="50,0 200,0 400,500 150,500" fill="url(#grad-accent-battle-bands)" opacity="0.4" />
+    <polygon points="450,0 300,0 100,500 350,500" fill="#e11d48" opacity="0.3" />
+  </g>
+
+  <!-- Dynamic concert energy particles & rings -->
+  <g opacity="0.65">
+    <circle cx="250" cy="210" r="140" fill="none" stroke="#f97316" stroke-width="1.5" stroke-dasharray="6 8" opacity="0.5" />
+    <circle cx="250" cy="210" r="190" fill="none" stroke="#e11d48" stroke-width="1" stroke-dasharray="3 12" opacity="0.35" />
+    <circle cx="100" cy="125" r="3" fill="#ffffff" opacity="0.8" />
+    <circle cx="410" cy="150" r="4" fill="#e11d48" opacity="0.9" />
+    <circle cx="375" cy="90" r="2.5" fill="#ffffff" opacity="0.7" />
+    <circle cx="150" cy="275" r="3.5" fill="#f97316" opacity="0.85" />
+    <circle cx="75" cy="240" r="2" fill="#fb923c" opacity="0.75" />
+    <circle cx="440" cy="260" r="3" fill="#ffffff" opacity="0.8" />
+  </g>
+
+  <!-- Stage Graphic / Silhouette Iconography -->
+  <g transform="translate(250, 210)" opacity="0.9">
+    <path d="M 0 -36 L 9 -12 L 35 -12 L 14 4 L 22 28 L 0 14 L -22 28 L -14 4 L -35 -12 L -9 -12 Z" fill="url(#grad-accent-battle-bands)" />
+    <circle cx="0" cy="0" r="9" fill="#ffffff" />
+  </g>
+
+  <!-- Stage Spotlights from bottom -->
+  <path d="M 25 500 L 175 175 L 325 175 L 475 500 Z" fill="url(#grad-accent-battle-bands)" opacity="0.1" />
+
+  <!-- Bottom Dark Vignette Overlay -->
+  <rect width="500" height="500" fill="url(#grad-overlay-battle-bands)" />
+
+  <!-- Empyrean Fest Watermark Pill -->
+  <g transform="translate(20, 22)">
+    <rect width="108" height="24" rx="12" fill="#071026" fill-opacity="0.85" stroke="#f8c12c" stroke-opacity="0.45" stroke-width="1" />
+    <text x="54" y="16" fill="#f8c12c" font-family="'Marcellus', serif, sans-serif" font-size="10" font-weight="600" text-anchor="middle" letter-spacing="1.5">EMPYREAN</text>
+  </g>
+
+  <!-- Card Category Badge & Title -->
+  <g transform="translate(22, 476)">
+    <text x="0" y="-30" fill="#e11d48" font-family="'Outfit', sans-serif" font-size="11" font-weight="600" text-transform="uppercase" letter-spacing="2" opacity="0.95">✦ Battle of the Bands</text>
+    <text x="0" y="-8" fill="#ffffff" font-family="'Cinzel', serif, sans-serif" font-size="17" font-weight="700" letter-spacing="0.5">Decibel Rock Clash</text>
+  </g>
+
+  <!-- Elegant Inner Border -->
+  <rect x="1" y="1" width="498" height="498" fill="none" stroke="#f8c12c" stroke-opacity="0.22" stroke-width="1" rx="8" />
+  <rect x="5" y="5" width="490" height="490" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1" rx="6" />
+</svg>

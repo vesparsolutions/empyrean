@@ -1,45 +1,70 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { LeftArtworkLayer } from './LeftArtworkLayer';
 import { RightArtworkLayer } from './RightArtworkLayer';
-import { CentralLogo } from './CentralLogo';
-import { Eye, EyeOff } from 'lucide-react';
+import { CinematicRibbonGallery } from './CinematicRibbonGallery';
+import { FestivalCanopy } from './FestivalCanopy';
 
 interface EmpyreanHeroProps {
-  onExploreClick: () => void;
+  onExploreClick?: () => void;
   prefersReducedMotion?: boolean;
+  imageUrls?: string[];
+  onProgressChange?: (progress: number) => void;
 }
 
 export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
   onExploreClick,
   prefersReducedMotion = false,
+  imageUrls,
+  onProgressChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
-  const [showRefOverlay, setShowRefOverlay] = useState(false);
-  const [refOpacity, setRefOpacity] = useState(0.4);
+  const [logoProgress, setLogoProgress] = useState(0);
+  const [isRibbonTriggered, setIsRibbonTriggered] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // Monitor viewport resize for responsive element adjustments across mobile, tablet, and laptop
-  useEffect(() => {
-    const checkDevice = () => {
-      const w = window.innerWidth;
-      if (w < 640) {
-        setDeviceType('mobile');
-      } else if (w < 1024) {
-        setDeviceType('tablet');
-      } else {
-        setDeviceType('desktop');
-      }
-    };
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
+  // Phase state:
+  // 'hero' = Initial grand entrance (scroll locked on body, waiting for single scroll)
+  // 'transitioning' = Animating between hero and ribbon (all inputs intercepted & swallowed)
+  // 'ribbon' = Landed in Ribbon section (normal native scrolling active)
+  const phaseRef = useRef<'hero' | 'transitioning' | 'ribbon'>('hero');
+  const currentProgressRef = useRef(0);
+  const animRef = useRef<number | null>(null);
+  const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Helper to lock/unlock document scrolling
+  const lockDocumentScroll = useCallback(() => {
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
   }, []);
+
+  const unlockDocumentScroll = useCallback(() => {
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }, []);
+
+  // Initial lifecycle: strictly start locked in the hero entrance at scroll position 0
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    window.scrollTo(0, 0);
+    lockDocumentScroll();
+    phaseRef.current = 'hero';
+    currentProgressRef.current = 0;
+    setLogoProgress(0);
+    onProgressChange?.(0);
+
+    return () => {
+      unlockDocumentScroll();
+      if (animRef.current) cancelAnimationFrame(animRef.current);
+      if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current);
+    };
+  }, [lockDocumentScroll, unlockDocumentScroll, onProgressChange]);
 
   // Subtle interactive mouse parallax (active when near top on desktop/laptop)
   useEffect(() => {
-    if (deviceType !== 'desktop' || prefersReducedMotion) return;
+    if (prefersReducedMotion) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
@@ -50,123 +75,316 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [deviceType, prefersReducedMotion]);
+  }, [prefersReducedMotion]);
 
-  // Compute scrubbed scroll progress within the pinned hero track
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const containerHeight = containerRef.current.offsetHeight;
-      const windowHeight = window.innerHeight;
-      
-      const totalScrollable = containerHeight - windowHeight;
-      if (totalScrollable <= 0) {
-        setScrollProgress(0);
+  // Smooth cinematic animation engine (cubic ease-in-out transition)
+  const animateTo = useCallback(
+    (target: number, durationMs = 1250) => {
+      phaseRef.current = 'transitioning';
+      lockDocumentScroll();
+
+      if (cooldownTimerRef.current) {
+        clearTimeout(cooldownTimerRef.current);
+        cooldownTimerRef.current = null;
+      }
+
+      if (prefersReducedMotion) {
+        currentProgressRef.current = target;
+        setLogoProgress(target);
+        if (target === 1) {
+          phaseRef.current = 'ribbon';
+          unlockDocumentScroll();
+        } else {
+          phaseRef.current = 'hero';
+          lockDocumentScroll();
+        }
         return;
       }
 
-      const scrolled = -rect.top;
-      const progress = Math.min(1, Math.max(0, scrolled / totalScrollable));
-      setScrollProgress(progress);
+      if (animRef.current) cancelAnimationFrame(animRef.current);
+
+      const start = currentProgressRef.current;
+      const delta = target - start;
+      if (Math.abs(delta) < 0.005) {
+        currentProgressRef.current = target;
+        setLogoProgress(target);
+        if (target === 1) {
+          phaseRef.current = 'ribbon';
+          unlockDocumentScroll();
+        } else {
+          phaseRef.current = 'hero';
+          lockDocumentScroll();
+        }
+        return;
+      }
+
+      const startTime = performance.now();
+
+      const step = (now: number) => {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / durationMs);
+
+        // Natural physical easing (smooth acceleration, swift travel, soft landing)
+        const eased =
+          t < 0.5
+            ? 4 * t * t * t
+            : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        const current = start + delta * eased;
+        currentProgressRef.current = current;
+        setLogoProgress(current);
+        onProgressChange?.(current);
+
+        // While transitioning, guarantee window stays at 0
+        if (window.scrollY !== 0) {
+          window.scrollTo(0, 0);
+        }
+
+        if (t < 1) {
+          animRef.current = requestAnimationFrame(step);
+        } else {
+          currentProgressRef.current = target;
+          setLogoProgress(target);
+          onProgressChange?.(target);
+          animRef.current = null;
+
+          // Cooldown buffer to swallow trailing momentum / freak scrolling
+          cooldownTimerRef.current = setTimeout(() => {
+            if (target === 1) {
+              phaseRef.current = 'ribbon';
+              unlockDocumentScroll(); // Normal scrolling resumes!
+            } else {
+              phaseRef.current = 'hero';
+              lockDocumentScroll(); // Hero locked waiting for scroll
+            }
+            cooldownTimerRef.current = null;
+          }, 350);
+        }
+      };
+
+      animRef.current = requestAnimationFrame(step);
+    },
+    [prefersReducedMotion, lockDocumentScroll, unlockDocumentScroll, onProgressChange]
+  );
+
+  // Global event trigger for navbar/external interactions
+  useEffect(() => {
+    const handleCustomTrigger = () => {
+      if (phaseRef.current === 'hero') {
+        animateTo(1, 1250);
+        onExploreClick?.();
+      }
+    };
+    window.addEventListener('empyrean:trigger-ribbon', handleCustomTrigger);
+    return () => window.removeEventListener('empyrean:trigger-ribbon', handleCustomTrigger);
+  }, [animateTo, onExploreClick]);
+
+  // Update Ribbon trigger state with hysteresis
+  useEffect(() => {
+    if (logoProgress >= 0.78) {
+      setIsRibbonTriggered(true);
+    } else if (logoProgress <= 0.35) {
+      setIsRibbonTriggered(false);
+    }
+  }, [logoProgress]);
+
+  // One-Scroll Gesture Listener & Input Lock
+  useEffect(() => {
+    let touchStartY = 0;
+
+    const handleWheel = (e: WheelEvent) => {
+      const currentPhase = phaseRef.current;
+
+      // 1. In Hero Phase (Initial State)
+      if (currentPhase === 'hero') {
+        // Prevent all native scroll in hero section
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Any downward scroll triggers the smooth animation into the ribbon section
+        if (e.deltaY > 3) {
+          animateTo(1, 1250);
+        }
+        return;
+      }
+
+      // 2. In Transitioning Phase: Swallow ALL wheel events completely
+      if (currentPhase === 'transitioning') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // If animation completed but user is still wheeling frantically, extend cooldown
+        if (!animRef.current && cooldownTimerRef.current) {
+          clearTimeout(cooldownTimerRef.current);
+          cooldownTimerRef.current = setTimeout(() => {
+            phaseRef.current = 'ribbon';
+            unlockDocumentScroll();
+            cooldownTimerRef.current = null;
+          }, 250);
+        }
+        return;
+      }
+
+      // 3. In Ribbon Phase: Normal scrolling is active!
+      // If user scrolls up when already at the top of the page, return to hero
+      if (currentPhase === 'ribbon' && window.scrollY <= 5 && e.deltaY < -15) {
+        e.preventDefault();
+        e.stopPropagation();
+        animateTo(0, 1100);
+        return;
+      }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        touchStartY = e.touches[0].clientY;
+      }
+    };
 
-  // Bottom border opacity - fades out quickly as user scrolls down
-  const bottomBorderOpacity = Math.max(0, 1 - scrollProgress * 3.5);
+    const handleTouchMove = (e: TouchEvent) => {
+      const currentPhase = phaseRef.current;
+
+      if (currentPhase === 'hero') {
+        if (e.cancelable) e.preventDefault();
+        const currentY = e.touches[0].clientY;
+        const deltaY = touchStartY - currentY; // positive = swipe up = scroll down
+        if (deltaY > 10) {
+          animateTo(1, 1200);
+        }
+        return;
+      }
+
+      if (currentPhase === 'transitioning') {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+
+      if (currentPhase === 'ribbon' && window.scrollY <= 5) {
+        const currentY = e.touches[0].clientY;
+        const deltaY = touchStartY - currentY;
+        if (deltaY < -18) {
+          if (e.cancelable) e.preventDefault();
+          animateTo(0, 1100);
+        }
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const currentPhase = phaseRef.current;
+
+      if (currentPhase === 'hero') {
+        if (['ArrowDown', 'PageDown', ' '].includes(e.key)) {
+          e.preventDefault();
+          animateTo(1, 1250);
+        } else if (['ArrowUp', 'PageUp'].includes(e.key)) {
+          e.preventDefault();
+        }
+        return;
+      }
+
+      if (currentPhase === 'transitioning') {
+        if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(e.key)) {
+          e.preventDefault();
+        }
+        return;
+      }
+
+      if (currentPhase === 'ribbon' && window.scrollY <= 5) {
+        if (['ArrowUp', 'PageUp'].includes(e.key)) {
+          e.preventDefault();
+          animateTo(0, 1100);
+        }
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [animateTo, unlockDocumentScroll]);
+
+  // Bottom folk-art border fades out quickly as user starts scrolling
+  const bottomBorderOpacity = Math.max(0, 1 - logoProgress * 3.5);
 
   return (
     <div
       ref={containerRef}
       id="hero-scroll-container"
-      className="relative w-full h-[125vh] bg-[#071026]"
+      className="relative w-full h-screen bg-[#0b1839]"
     >
-      {/* STICKY VIEWPORT: Pinned while user scrolls through the 125vh track */}
-      <div className="sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center bg-[#071026]">
+      {/* Viewport stage container */}
+      <div className="relative w-full h-full overflow-hidden flex items-center justify-center bg-[#0b1839]">
         {/* Full-bleed stage container */}
         <div
           id="hero-stage"
-          className="relative w-full h-full max-w-[1920px] mx-auto flex items-center justify-center overflow-hidden fest-bg-pattern select-none"
+          className="relative w-full h-full max-w-[1920px] mx-auto flex items-center justify-center fest-bg-pattern select-none"
+          style={{ overflow: 'visible' }}
         >
           {/* Deep Navy Vignette & Subtle Atmospheric Radial Glow */}
-          <div className="absolute inset-0 bg-radial from-transparent via-[#071026]/40 to-[#071026] pointer-events-none z-0" />
+          <div className="absolute inset-0 bg-radial from-transparent via-[#0b1839]/30 to-[#0b1839] pointer-events-none z-0" />
 
-          {/* Reference Image Comparison Overlay (QA Developer Tool) */}
-          {showRefOverlay && (
-            <div
-              className="absolute inset-0 pointer-events-none z-50 transition-opacity"
-              style={{ opacity: refOpacity }}
-            >
-              <img
-                src="/assets/empyrean/reference-hero.jpg"
-                alt="Source Truth Reference Composition"
-                className="w-full h-full object-contain"
-              />
-            </div>
-          )}
+          {/* 3D Cinematic S-Ribbon Gallery (Triggered when logo reaches ~80% to top middle) */}
+          <div
+            id="cinematic-ribbon-wrapper"
+            className="absolute inset-0 z-[20] flex items-center justify-center overflow-hidden"
+            style={{
+              pointerEvents: isRibbonTriggered ? 'auto' : 'none',
+            }}
+          >
+            <CinematicRibbonGallery
+              isTriggered={isRibbonTriggered}
+              prefersReducedMotion={prefersReducedMotion}
+              initialImageUrls={imageUrls}
+            />
+          </div>
 
-          {/* 1. Unified Left Artwork Layer (z-index: 10) */}
+          {/* 1. Multiple Left Artwork Elements Layer (exits towards bottom-left corner as logo travels) */}
           <div
             id="left-artwork-wrapper"
             style={{
-              transform: prefersReducedMotion || scrollProgress > 0.05
-                ? 'none'
-                : `translate3d(${mousePos.x * -8}px, ${mousePos.y * -4}px, 0)`,
+              transform:
+                prefersReducedMotion || logoProgress > 0.05
+                  ? 'none'
+                  : `translate3d(${mousePos.x * -8}px, ${mousePos.y * -4}px, 0)`,
               transition: 'transform 0.15s ease-out',
             }}
-            className="absolute inset-0 w-full h-full pointer-events-none z-[12]"
+            className="absolute inset-0 w-full h-full pointer-events-none z-[12] overflow-visible"
           >
             <LeftArtworkLayer
-              scrollProgress={scrollProgress}
+              scrollProgress={logoProgress}
               prefersReducedMotion={prefersReducedMotion}
-              deviceType={deviceType}
             />
           </div>
 
-          {/* 2. Unified Right Artwork Layer (z-index: 10) */}
+          {/* 2. Multiple Right Artwork Elements Layer (exits towards bottom-right corner as logo travels) */}
           <div
             id="right-artwork-wrapper"
             style={{
-              transform: prefersReducedMotion || scrollProgress > 0.05
-                ? 'none'
-                : `translate3d(${mousePos.x * 8}px, ${mousePos.y * 4}px, 0)`,
+              transform:
+                prefersReducedMotion || logoProgress > 0.05
+                  ? 'none'
+                  : `translate3d(${mousePos.x * 8}px, ${mousePos.y * 4}px, 0)`,
               transition: 'transform 0.15s ease-out',
             }}
-            className="absolute inset-0 w-full h-full pointer-events-none z-10"
+            className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible"
           >
             <RightArtworkLayer
-              scrollProgress={scrollProgress}
+              scrollProgress={logoProgress}
               prefersReducedMotion={prefersReducedMotion}
-              deviceType={deviceType}
             />
           </div>
 
-          {/* 3. Central Logo Lockup (z-index: 30 - Always above artwork) */}
-          <div
-            id="central-logo-wrapper"
-            style={{
-              transform: prefersReducedMotion || scrollProgress > 0.05
-                ? 'none'
-                : `translate3d(${mousePos.x * -4}px, ${mousePos.y * -2}px, 0)`,
-              transition: 'transform 0.15s ease-out',
-            }}
-            className="absolute inset-0 w-full h-full pointer-events-none z-30"
-          >
-            <CentralLogo
-              scrollProgress={scrollProgress}
-              prefersReducedMotion={prefersReducedMotion}
-              onExploreClick={onExploreClick}
-            />
-          </div>
-
-          {/* 4. Bottom Folk-Art Border (z-index: 20 - Anchored to bottom edge) */}
+          {/* 3. Bottom Folk-Art Border (Fades out cleanly as user starts scrolling) */}
           <div
             id="hero-bottom-border"
-            className="absolute bottom-0 left-0 right-0 h-6 sm:h-7 md:h-8 pointer-events-none z-20 overflow-hidden"
+            className="absolute bottom-0 left-0 right-0 h-6 sm:h-7 md:h-8 pointer-events-none z-25 overflow-hidden"
             style={{
               opacity: bottomBorderOpacity,
               transition: 'opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -182,38 +400,11 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
             </picture>
           </div>
 
-          {/* Floating Reference Alignment Toggle (Developer QA tool) */}
-          <div className="absolute bottom-4 right-4 z-50 flex items-center gap-2 bg-[#0c183a]/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#f8c12c]/30 text-[11px] text-[#cbd5e1] shadow-xl">
-            <button
-              onClick={() => setShowRefOverlay(!showRefOverlay)}
-              className="flex items-center gap-1.5 hover:text-[#f8c12c] transition-colors focus:outline-none"
-              title="Compare rendered layers with the original reference image"
-            >
-              {showRefOverlay ? (
-                <>
-                  <EyeOff className="w-3.5 h-3.5 text-[#f8c12c]" />
-                  <span className="font-sub uppercase tracking-wider text-[#f8c12c]">Hide Ref</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="w-3.5 h-3.5" />
-                  <span className="font-sub uppercase tracking-wider">Compare Ref</span>
-                </>
-              )}
-            </button>
-            {showRefOverlay && (
-              <input
-                type="range"
-                min="0.1"
-                max="1"
-                step="0.05"
-                value={refOpacity}
-                onChange={(e) => setRefOpacity(parseFloat(e.target.value))}
-                className="w-16 h-1 accent-[#f8c12c] cursor-pointer"
-                title="Overlay Opacity"
-              />
-            )}
-          </div>
+          {/* 4. Physical Festive Canopy (Lifts up and disappears before logo reaches top) */}
+          <FestivalCanopy
+            scrollProgress={logoProgress}
+            prefersReducedMotion={prefersReducedMotion}
+          />
         </div>
       </div>
     </div>
