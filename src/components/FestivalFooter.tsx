@@ -8,10 +8,12 @@ import {
 
 interface FestivalFooterProps {
   onRegisterClick?: (tier?: string) => void;
+  onPartnersClick?: () => void;
 }
 
 export const FestivalFooter: React.FC<FestivalFooterProps> = ({
   onRegisterClick,
+  onPartnersClick,
 }) => {
   const handleScrollTo = (id: string) => {
     if (id === 'top') {
@@ -90,33 +92,21 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
       {/* 
         3. Main Footer Content (4 Columns with subtle gold vertical dividers)
       */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
-          {/* COLUMN 1: Brand & About (Span 4) */}
-          <div className="lg:col-span-4 flex flex-col">
-            {/* Mountain Brand Logo & Title */}
-            <div className="flex items-center gap-3 mb-2">
-              <svg
-                className="w-10 h-7 text-[#f8c12c] shrink-0"
-                viewBox="0 0 40 28"
-                fill="none"
-              >
-                <path
-                  d="M20 2 L26 14 L32 8 L40 24 H0 L10 12 L16 18 Z"
-                  stroke="#f8c12c"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                  fill="rgba(248, 193, 44, 0.15)"
+      <div className="relative z-10 max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1536px] mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex flex-col md:grid md:grid-cols-2 lg:flex lg:flex-row items-start gap-10 md:gap-8 lg:gap-6 xl:gap-8">
+          {/* COLUMN 1: Brand & About */}
+          <div className="w-full lg:w-[32%] xl:w-[30%] lg:max-w-md flex flex-col">
+            {/* Empyrean Main Logo */}
+            <div className="mb-4">
+              <picture>
+                <source srcSet="/assets/empyrean/logo-empyrean.webp" type="image/webp" />
+                <img
+                  src="/assets/empyrean/logo-empyrean.png"
+                  alt="EMPYREAN - An Era Reimagined"
+                  className="w-44 sm:w-52 md:w-56 h-auto object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
+                  loading="lazy"
                 />
-                <circle cx="20" cy="2" r="1.5" fill="#f8c12c" />
-              </svg>
-              <h3 className="font-display font-black text-2xl sm:text-3xl tracking-[0.22em] text-[#fff6e0] leading-none">
-                EMPYREAN
-              </h3>
-            </div>
-
-            <div className="text-[10px] font-mono tracking-[0.34em] text-[#f8c12c] font-semibold uppercase mb-4">
-              ✦ AN ERA REIMAGINED ✦
+              </picture>
             </div>
 
             <p className="text-xs sm:text-sm text-[#cbd5e1]/80 leading-relaxed max-w-sm mb-6 font-body">
@@ -132,7 +122,7 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
               <div className="flex items-center gap-4 text-[#cbd5e1]/80">
                 {/* Instagram */}
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/empyrean_iimj/"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram"
@@ -146,7 +136,7 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
                 </a>
                 {/* LinkedIn */}
                 <a
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/company/empyrean-iimj"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="LinkedIn"
@@ -156,51 +146,51 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
                     <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.46 1.46 0 1 0 0-2.92 1.46 1.46 0 0 0 0 2.92m1.38 9.74v-8.37H5.08v8.37h2.76z" />
                   </svg>
                 </a>
-                {/* YouTube */}
+                {/* Gmail compose preset to empyrean@iimj.ac.in */}
                 <a
-                  href="https://youtube.com"
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=empyrean@iimj.ac.in"
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="YouTube"
+                  aria-label="Send email to empyrean@iimj.ac.in via Gmail"
                   className="hover:text-[#f8c12c] hover:scale-115 transition-all duration-200"
                 >
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.5 12 3.5 12 3.5s-7.505 0-9.377.55a3.016 3.016 0 0 0-2.122 2.136C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.55 9.376.55 9.376.55s7.505 0 9.377-.55a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                  </svg>
+                  <Mail className="w-5 h-5" />
                 </a>
-                {/* Custom X (Twitter) Vector */}
+              </div>
+
+              {/* Designed with ❤️ by Vespar */}
+              <div className="mt-4">
                 <a
-                  href="https://twitter.com"
+                  href="https://vesparsolutions.in"
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="X (Twitter)"
-                  className="hover:text-[#f8c12c] hover:scale-115 transition-all duration-200"
+                  className="inline-flex items-center flex-wrap gap-2 text-[11px] sm:text-xs text-[#cbd5e1]/80 hover:text-[#f8c12c] transition-colors group cursor-pointer"
                 >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </a>
-                {/* Spotify Vector */}
-                <a
-                  href="https://spotify.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Spotify"
-                  className="hover:text-[#f8c12c] hover:scale-115 transition-all duration-200"
-                >
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 2C6.477 2 2 6.477 2 12c0 5.524 4.477 10 10 10 5.524 0 10-4.476 10-10 0-5.523-4.476-10-10-10zm4.586 14.424c-.18.295-.563.387-.857.207-2.348-1.435-5.304-1.76-8.786-.964-.335.077-.67-.133-.746-.469-.077-.334.132-.67.467-.747 3.807-.87 7.076-.496 9.715 1.115.294.18.386.563.207.858zm1.226-2.724c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.849-.106-.974-.517-.126-.413.105-.849.518-.975 3.633-1.102 8.147-.568 11.236 1.33.366.225.482.705.257 1.071zm.105-2.835C14.692 9.08 8.46 8.877 4.887 9.963c-.534.161-1.099-.145-1.26-.679-.162-.533.145-1.1.679-1.26 4.108-1.247 10.999-1.01 14.542 1.094.48.285.637.903.352 1.382-.284.48-.902.636-1.281.365z" />
-                  </svg>
+                  <span className="font-body">Designed with</span>
+                  <span
+                    className="inline-block text-xs group-hover:scale-125 transition-transform duration-200"
+                    role="img"
+                    aria-label="love"
+                  >
+                    ❤️
+                  </span>
+                  <span className="font-body">by</span>
+                  <img
+                    src="/vespar.png"
+                    alt="Vespar"
+                    className="h-[9px] sm:h-[10.5px] w-auto object-contain inline-block transition-transform duration-200 group-hover:scale-105"
+                    loading="lazy"
+                  />
                 </a>
               </div>
             </div>
           </div>
 
           {/* Vertical Divider 1 (Desktop) */}
-          <div className="hidden lg:block w-[1px] bg-gradient-to-b from-transparent via-[#f8c12c]/30 to-transparent self-stretch my-2" />
+          <div className="hidden lg:block w-[1px] bg-gradient-to-b from-transparent via-[#f8c12c]/30 to-transparent self-stretch min-h-[170px] my-2 shrink-0" />
 
-          {/* COLUMN 2: Quick Links (Span 2) */}
-          <div className="lg:col-span-2 flex flex-col">
+          {/* COLUMN 2: Quick Links */}
+          <div className="w-full sm:w-auto lg:w-[15%] xl:w-[14%] flex flex-col">
             <h4 className="font-mono text-xs sm:text-sm font-semibold uppercase tracking-[0.25em] text-[#f8c12c] mb-4">
               QUICK LINKS
             </h4>
@@ -263,10 +253,10 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
           </div>
 
           {/* Vertical Divider 2 (Desktop) */}
-          <div className="hidden lg:block w-[1px] bg-gradient-to-b from-transparent via-[#f8c12c]/30 to-transparent self-stretch my-2" />
+          <div className="hidden lg:block w-[1px] bg-gradient-to-b from-transparent via-[#f8c12c]/30 to-transparent self-stretch min-h-[170px] my-2 shrink-0" />
 
-          {/* COLUMN 3: Explore (Span 2) */}
-          <div className="lg:col-span-2 flex flex-col">
+          {/* COLUMN 3: Explore */}
+          <div className="w-full sm:w-auto lg:w-[15%] xl:w-[14%] flex flex-col">
             <h4 className="font-mono text-xs sm:text-sm font-semibold uppercase tracking-[0.25em] text-[#f8c12c] mb-4">
               EXPLORE
             </h4>
@@ -311,7 +301,7 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
               <li>
                 <button
                   type="button"
-                  onClick={() => handleScrollTo('sponsors')}
+                  onClick={() => (onPartnersClick ? onPartnersClick() : handleScrollTo('sponsors'))}
                   className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
                 >
                   Partners
@@ -329,11 +319,11 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
             </ul>
           </div>
 
-          {/* Vertical Divider 3 (Desktop) */}
-          <div className="hidden lg:block w-[1px] bg-gradient-to-b from-transparent via-[#f8c12c]/30 to-transparent self-stretch my-2" />
+          {/* Vertical Divider 3 (Desktop, shifted to the right with Contact Us) */}
+          <div className="hidden lg:block w-[1px] bg-gradient-to-b from-transparent via-[#f8c12c]/30 to-transparent self-stretch min-h-[170px] my-2 shrink-0 lg:ml-auto" />
 
-          {/* COLUMN 4: Contact Us (Span 3) */}
-          <div className="lg:col-span-3 flex flex-col">
+          {/* COLUMN 4: Contact Us (Shifted to rightmost side) */}
+          <div className="w-full sm:w-auto lg:min-w-[240px] xl:min-w-[280px] flex flex-col">
             <h4 className="font-mono text-xs sm:text-sm font-semibold uppercase tracking-[0.25em] text-[#f8c12c] mb-4">
               CONTACT US
             </h4>
@@ -353,10 +343,12 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-[#f8c12c] shrink-0" />
                 <a
-                  href="mailto:empyrean@iimjammu.ac.in"
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=empyrean@iimj.ac.in"
+                  target="_blank"
+                  rel="noreferrer"
                   className="hover:text-[#f8c12c] transition-colors break-all"
                 >
-                  empyrean@iimjammu.ac.in
+                  empyrean@iimj.ac.in
                 </a>
               </div>
 

@@ -6,6 +6,8 @@ interface FestivalNavbarProps {
   prefersReducedMotion?: boolean;
   onExploreClick?: () => void;
   onRegisterClick?: (tier?: string) => void;
+  currentPage?: 'home' | 'partners';
+  onNavigate?: (page: 'home' | 'partners', section?: string) => void;
 }
 
 export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
@@ -13,18 +15,23 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
   prefersReducedMotion = false,
   onExploreClick,
   onRegisterClick,
+  currentPage = 'home',
+  onNavigate,
 }) => {
-  const [currentTheme, setCurrentTheme] = useState<'navy' | 'parchment'>('navy');
+  const [currentTheme, setCurrentTheme] = useState<'navy' | 'parchment'>(
+    currentPage === 'partners' ? 'parchment' : 'navy'
+  );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // Normalise progress between 0 and 1
-  const logoProgress = Math.min(1, Math.max(0, progress));
+  // Normalise progress between 0 and 1; on partners page, always docked at top (progress = 1)
+  const effectiveProgress = currentPage === 'partners' ? 1 : progress;
+  const logoProgress = Math.min(1, Math.max(0, effectiveProgress));
   const isDocked = logoProgress >= 0.95;
 
   // Idle subtle mouse parallax when logo is centered in hero phase
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion || currentPage === 'partners') return;
     const handleMouseMove = (e: MouseEvent) => {
       if (logoProgress > 0.05) return;
       const x = (e.clientX / window.innerWidth - 0.5) * 2;
@@ -34,25 +41,40 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [prefersReducedMotion, logoProgress]);
+  }, [prefersReducedMotion, logoProgress, currentPage]);
 
   // Dynamic Background Theme Detection based on scroll position:
   // Detects whether the navbar is currently over the Navy Hero/Ribbon, Warm Parchment Artists section, or Dark Sponsors section
   useEffect(() => {
+    if (currentPage === 'partners') {
+      setCurrentTheme('parchment');
+      return;
+    }
+
     const handleScroll = () => {
       const artistsSection = document.getElementById('artists');
+      const eventsSection = document.getElementById('events');
       const sponsorsSection = document.getElementById('sponsors');
+      const visitUsSection = document.getElementById('visit-us');
 
       // The navbar has height ~76px.
-      // 1. If user scrolled into dark Sponsors section, switch to 'navy'
-      if (sponsorsSection && sponsorsSection.getBoundingClientRect().top <= 72) {
+      // 1. If user scrolled into dark Visit Us section, switch to 'navy'
+      if (visitUsSection && visitUsSection.getBoundingClientRect().top <= 72) {
         setCurrentTheme('navy');
       }
-      // 2. If user is over warm parchment Artists section, switch to 'parchment'
+      // 2. If user scrolled into light parchment Sponsors section, switch to 'parchment'
+      else if (sponsorsSection && sponsorsSection.getBoundingClientRect().top <= 72) {
+        setCurrentTheme('parchment');
+      }
+      // 2. If user is over dark Events section, switch to 'navy'
+      else if (eventsSection && eventsSection.getBoundingClientRect().top <= 72) {
+        setCurrentTheme('navy');
+      }
+      // 3. If user is over warm parchment Artists section, switch to 'parchment'
       else if (artistsSection && artistsSection.getBoundingClientRect().top <= 72) {
         setCurrentTheme('parchment');
       }
-      // 3. Otherwise default to 'navy' (Hero / Ribbon section)
+      // 4. Otherwise default to 'navy' (Hero / Ribbon section)
       else {
         setCurrentTheme('navy');
       }
@@ -62,25 +84,35 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
     handleScroll(); // Initial check
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [currentPage]);
 
   // Smooth Scroll Navigation Handlers
   const handleNavigate = useCallback(
-    (target: 'artists' | 'experience' | 'passes' | 'register' | 'top' | 'sponsors') => {
+    (target: 'artists' | 'events' | 'experience' | 'partners' | 'register' | 'top' | 'sponsors') => {
       setMobileMenuOpen(false);
 
-      if (target === 'top') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-
-      if (target === 'passes') {
-        onRegisterClick?.('Gold All-Access Pass');
+      if (target === 'partners') {
+        if (currentPage === 'partners') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          onNavigate?.('partners');
+        }
         return;
       }
 
       if (target === 'register') {
         onRegisterClick?.();
+        return;
+      }
+
+      // If on Partners page and user clicks a Home section:
+      if (currentPage === 'partners') {
+        onNavigate?.('home', target);
+        return;
+      }
+
+      if (target === 'top') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
@@ -96,6 +128,10 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
           setTimeout(() => {
             document.getElementById('artists')?.scrollIntoView({ behavior: 'smooth' });
           }, 1300);
+        } else if (target === 'events') {
+          setTimeout(() => {
+            document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
+          }, 1300);
         } else if (target === 'experience') {
           setTimeout(() => {
             window.scrollTo({ top: window.innerHeight * 0.45, behavior: 'smooth' });
@@ -106,14 +142,20 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
 
       if (target === 'artists') {
         document.getElementById('artists')?.scrollIntoView({ behavior: 'smooth' });
+      } else if (target === 'events') {
+        document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
       } else if (target === 'experience') {
         window.scrollTo({ top: window.innerHeight * 0.45, behavior: 'smooth' });
       }
     },
-    [logoProgress, onRegisterClick]
+    [logoProgress, onRegisterClick, currentPage, onNavigate]
   );
 
   const handleHeroLogoClick = () => {
+    if (currentPage === 'partners') {
+      onNavigate?.('home', 'top');
+      return;
+    }
     if (logoProgress < 0.95) {
       window.dispatchEvent(new CustomEvent('empyrean:trigger-ribbon'));
       onExploreClick?.();
@@ -169,7 +211,7 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
         }}
       >
         <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* LEFT 2 HEADINGS: Artists & Experience */}
+          {/* LEFT HEADINGS: Artists & Events */}
           <nav className="flex-1 hidden md:flex items-center justify-end gap-6 lg:gap-10 pr-6 lg:pr-10">
             <button
               type="button"
@@ -190,14 +232,14 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
 
             <button
               type="button"
-              onClick={() => handleNavigate('experience')}
+              onClick={() => handleNavigate('events')}
               className={`group relative text-xs sm:text-sm font-sub uppercase tracking-[0.24em] transition-all cursor-pointer ${
                 isParchment
                   ? 'text-[#1a0f05] hover:text-[#991b1b] font-bold'
                   : 'text-[#fef3c7]/85 hover:text-[#f8c12c] font-semibold'
               }`}
             >
-              <span>Experience</span>
+              <span>Events</span>
               <span
                 className={`absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${
                   isParchment ? 'bg-[#991b1b]' : 'bg-[#f8c12c]'
@@ -215,22 +257,26 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
             {/* Hit area for clicking the docked logo */}
           </div>
 
-          {/* RIGHT 2 HEADINGS: Passes & Register */}
+          {/* RIGHT 2 HEADINGS: Partners & Register */}
           <nav className="flex-1 hidden md:flex items-center justify-start gap-6 lg:gap-10 pl-6 lg:pr-10">
             <button
               type="button"
-              onClick={() => handleNavigate('passes')}
+              onClick={() => handleNavigate('partners')}
               className={`group relative text-xs sm:text-sm font-sub uppercase tracking-[0.24em] transition-all cursor-pointer ${
                 isParchment
-                  ? 'text-[#1a0f05] hover:text-[#991b1b] font-bold'
+                  ? currentPage === 'partners'
+                    ? 'text-[#991b1b] font-bold'
+                    : 'text-[#1a0f05] hover:text-[#991b1b] font-bold'
+                  : currentPage === 'partners'
+                  ? 'text-[#f8c12c] font-bold'
                   : 'text-[#fef3c7]/85 hover:text-[#f8c12c] font-semibold'
               }`}
             >
-              <span>Passes</span>
+              <span>Partners</span>
               <span
-                className={`absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${
-                  isParchment ? 'bg-[#991b1b]' : 'bg-[#f8c12c]'
-                }`}
+                className={`absolute -bottom-1 left-0 h-[2px] transition-all duration-300 ${
+                  currentPage === 'partners' ? 'w-full' : 'w-0 group-hover:w-full'
+                } ${isParchment ? 'bg-[#991b1b]' : 'bg-[#f8c12c]'}`}
               />
             </button>
 
@@ -283,17 +329,19 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => handleNavigate('experience')}
+                onClick={() => handleNavigate('events')}
                 className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1 font-semibold"
               >
-                Experience
+                Events
               </button>
               <button
                 type="button"
-                onClick={() => handleNavigate('passes')}
-                className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1 font-semibold"
+                onClick={() => handleNavigate('partners')}
+                className={`text-left font-sub uppercase tracking-[0.2em] text-sm py-1 font-semibold ${
+                  currentPage === 'partners' ? 'text-[#991b1b] font-bold' : ''
+                }`}
               >
-                Passes
+                Partners
               </button>
               <button
                 type="button"

@@ -58,6 +58,10 @@
   font-family: 'Outfit', sans-serif;
 }
 
+.font-editorial {
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
 /* Subtle background stars & noise */
 .fest-bg-pattern {
   background-color: #0b1839;
