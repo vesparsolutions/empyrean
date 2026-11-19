@@ -1,8 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { LeftArtworkLayer } from './LeftArtworkLayer';
 import { RightArtworkLayer } from './RightArtworkLayer';
 import { CinematicRibbonGallery } from './CinematicRibbonGallery';
-import { FestivalCanopy } from './FestivalCanopy';
 
 interface EmpyreanHeroProps {
   onExploreClick?: () => void;
@@ -310,9 +308,6 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
     };
   }, [animateTo, unlockDocumentScroll]);
 
-  // Bottom folk-art border fades out quickly as user starts scrolling
-  const bottomBorderOpacity = Math.max(0, 1 - logoProgress * 3.5);
-
   return (
     <div
       ref={containerRef}
@@ -345,66 +340,17 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
             />
           </div>
 
-          {/* 1. Multiple Left Artwork Elements Layer (exits towards bottom-left corner as logo travels) */}
-          <div
-            id="left-artwork-wrapper"
-            style={{
-              transform:
-                prefersReducedMotion || logoProgress > 0.05
-                  ? 'none'
-                  : `translate3d(${mousePos.x * -8}px, ${mousePos.y * -4}px, 0)`,
-              transition: 'transform 0.15s ease-out',
-            }}
-            className="absolute inset-0 w-full h-full pointer-events-none z-[12] overflow-visible"
-          >
-            <LeftArtworkLayer
-              scrollProgress={logoProgress}
-              prefersReducedMotion={prefersReducedMotion}
-            />
-          </div>
-
-          {/* 2. Multiple Right Artwork Elements Layer (exits towards bottom-right corner as logo travels) */}
+          {/* Right Mosaic Artwork Layer (Exits towards bottom-right corner as user scrolls) */}
           <div
             id="right-artwork-wrapper"
-            style={{
-              transform:
-                prefersReducedMotion || logoProgress > 0.05
-                  ? 'none'
-                  : `translate3d(${mousePos.x * 8}px, ${mousePos.y * 4}px, 0)`,
-              transition: 'transform 0.15s ease-out',
-            }}
             className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible"
           >
             <RightArtworkLayer
               scrollProgress={logoProgress}
               prefersReducedMotion={prefersReducedMotion}
+              mousePos={mousePos}
             />
           </div>
-
-          {/* 3. Bottom Folk-Art Border (Fades out cleanly as user starts scrolling) */}
-          <div
-            id="hero-bottom-border"
-            className="absolute bottom-0 left-0 right-0 h-6 sm:h-7 md:h-8 pointer-events-none z-25 overflow-hidden"
-            style={{
-              opacity: bottomBorderOpacity,
-              transition: 'opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            }}
-          >
-            <picture>
-              <source srcSet="/assets/empyrean/border-bottom.webp" type="image/webp" />
-              <img
-                src="/assets/empyrean/border-bottom.png"
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            </picture>
-          </div>
-
-          {/* 4. Physical Festive Canopy (Lifts up and disappears before logo reaches top) */}
-          <FestivalCanopy
-            scrollProgress={logoProgress}
-            prefersReducedMotion={prefersReducedMotion}
-          />
         </div>
       </div>
     </div>

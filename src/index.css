@@ -144,6 +144,122 @@
   animation: idleFloatSlow 6s ease-in-out infinite;
 }
 
+/* Hero Mosaic Idle Micro-Animations */
+@keyframes mosaicFloatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes mosaicTruckIdle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-3px) rotate(0.4deg);
+  }
+  70% {
+    transform: translateY(1.5px) rotate(-0.25deg);
+  }
+}
+
+@keyframes mosaicFrameSway {
+  0%, 100% {
+    transform: rotate(18.2deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(19.8deg) translateY(-6px);
+  }
+}
+
+@keyframes mosaicMicFloat {
+  0%, 100% {
+    transform: rotate(-26.5deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(-24.5deg) translateY(-5px);
+  }
+}
+
+@keyframes mosaicCapBob {
+  0%, 100% {
+    transform: rotate(-13deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(-10deg) translateY(-7px);
+  }
+}
+
+@keyframes mosaicMandalaPulse {
+  0%, 100% {
+    transform: scale(1);
+    transform-origin: bottom right;
+  }
+  50% {
+    transform: scale(1.02);
+    transform-origin: bottom right;
+  }
+}
+
+.mosaic-anim-float-slow {
+  animation: mosaicFloatSlow 7s ease-in-out infinite;
+}
+
+.mosaic-anim-truck-idle {
+  animation: mosaicTruckIdle 4.2s ease-in-out infinite;
+}
+
+.mosaic-anim-frame-sway {
+  animation: mosaicFrameSway 6s ease-in-out infinite;
+}
+
+.mosaic-anim-mic-float {
+  animation: mosaicMicFloat 5.2s ease-in-out infinite;
+}
+
+.mosaic-anim-cap-bob {
+  animation: mosaicCapBob 4.8s ease-in-out infinite;
+}
+
+.mosaic-anim-mandala-pulse {
+  animation: mosaicMandalaPulse 7.5s ease-in-out infinite;
+}
+
+/* Master Mosaic Organic Floating Breathing Animation */
+@keyframes mosaicBreathe {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-8px) rotate(-0.35deg);
+  }
+  66% {
+    transform: translateY(3px) rotate(0.4deg);
+  }
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.85) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(15deg);
+  }
+}
+
+.mosaic-breathe {
+  animation: mosaicBreathe 6.5s ease-in-out infinite;
+}
+
+.star-twinkle {
+  animation: starTwinkle 3s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fruit-sway,
   .animate-float-gentle {

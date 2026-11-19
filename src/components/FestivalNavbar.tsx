@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 interface FestivalNavbarProps {
   progress: number; // 0 (dead center in hero) to 1 (docked at top)
@@ -181,8 +181,6 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
 
   // Headings & Navbar background opacity (fades in as logo approaches top)
   const navContentOpacity = Math.max(0, Math.min(1, (logoProgress - 0.72) / 0.28));
-  const hintOpacity = Math.max(0, 1 - logoProgress * 5);
-  const preTitleOpacity = Math.max(0, 1 - logoProgress * 3);
 
   // Theme-specific styles
   const isParchment = currentTheme === 'parchment';
@@ -375,23 +373,9 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
         }}
       >
         <div className="flex flex-col items-center max-w-[960px] w-full pt-2 sm:pt-4 md:pt-6">
-          {/* Presenter Pre-title (visible in hero, fades away as logo travels) */}
-          {preTitleOpacity > 0.05 && (
-            <div
-              className="flex items-center gap-2 sm:gap-3 text-[#f8c12c] text-xs sm:text-sm md:text-base font-sub tracking-[0.28em] uppercase mb-2 sm:mb-3 drop-shadow-md"
-              style={{ opacity: preTitleOpacity }}
-            >
-              <span className="w-5 sm:w-10 h-[1px] bg-[#f8c12c]/60"></span>
-              <span>✦</span>
-              <span className="font-semibold text-[#f8e5b0]">IIM Jammu Presents</span>
-              <span>✦</span>
-              <span className="w-5 sm:w-10 h-[1px] bg-[#f8c12c]/60"></span>
-            </div>
-          )}
-
           {/* Main Logo Emblem */}
           <div
-            className="relative w-[88%] sm:w-[82%] md:w-[76%] lg:w-[70%] xl:w-[65%] max-w-[420px] sm:max-w-[580px] md:max-w-[740px] lg:max-w-[840px] xl:max-w-[900px] my-1 sm:my-2 cursor-pointer pointer-events-auto"
+            className="relative w-[88%] sm:w-[80%] md:w-[72%] lg:w-[65%] max-w-[380px] sm:max-w-[480px] md:max-w-[580px] lg:max-w-[660px] xl:max-w-[720px] my-1 sm:my-2 cursor-pointer pointer-events-auto"
             onClick={handleHeroLogoClick}
           >
             {/* Ambient Warm Aura Glow */}
@@ -416,19 +400,6 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
             </picture>
           </div>
         </div>
-
-        {/* Floating subtle scroll hint at start when in dead center */}
-        {hintOpacity > 0.05 && (
-          <button
-            type="button"
-            className="absolute bottom-10 flex flex-col items-center gap-1 text-[#f8c12c]/80 hover:text-[#f8c12c] text-xs font-sub tracking-[0.2em] uppercase pointer-events-auto cursor-pointer transition-all duration-200 focus:outline-none"
-            style={{ opacity: hintOpacity }}
-            onClick={handleHeroLogoClick}
-          >
-            <span>Scroll to explore</span>
-            <ChevronDown className="w-4 h-4 animate-bounce text-[#f8c12c]" />
-          </button>
-        )}
       </div>
     </>
   );
