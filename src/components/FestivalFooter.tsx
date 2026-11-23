@@ -29,7 +29,7 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
   return (
     <footer
       id="festival-footer"
-      className="relative z-20 w-full bg-[#071026] text-[#e2e8f0] select-none overflow-hidden pt-16 sm:pt-20 md:pt-24 pb-6"
+      className="relative z-20 w-full bg-[#071026] text-[#e2e8f0] select-none overflow-hidden pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16"
     >
       {/* 
         1. Trikuta Mountain Layer across the bottom of the footer (Full Bleed)
@@ -59,34 +59,6 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
             aria-hidden="true"
           />
         </div>
-      </div>
-
-      {/* 
-        2. Subtle Mughal Palace Gateway Architectural Silhouette (Bottom-Right, matching reference)
-      */}
-      <div className="absolute right-0 bottom-8 pointer-events-none select-none z-[1] opacity-20 hidden lg:block">
-        <svg
-          width="260"
-          height="180"
-          viewBox="0 0 260 180"
-          fill="none"
-          stroke="#f8c12c"
-          strokeWidth="1.2"
-        >
-          {/* Outer Gateway Structure */}
-          <rect x="30" y="50" width="180" height="130" strokeDasharray="4 2" />
-          <path d="M30 50 L120 15 L210 50" />
-          <circle cx="120" cy="15" r="4" fill="#f8c12c" />
-          {/* Main Central Mughal Arch */}
-          <path d="M70 180 V105 Q120 70 170 105 V180" />
-          <path d="M80 180 V112 Q120 85 160 112 V180" strokeWidth="0.8" />
-          {/* Side Jharokha Arches */}
-          <path d="M35 120 V95 Q48 80 60 95 V120" strokeWidth="0.8" />
-          <path d="M180 120 V95 Q193 80 205 95 V120" strokeWidth="0.8" />
-          {/* Top Decorative Finials & Cornices */}
-          <line x1="20" y1="50" x2="220" y2="50" strokeWidth="1.5" />
-          <line x1="25" y1="55" x2="215" y2="55" strokeWidth="0.8" />
-        </svg>
       </div>
 
       {/* 
@@ -366,15 +338,13 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
           </div>
         </div>
 
-        {/* 
-          4. Bottom Copyright & Legal Links Bar (matching reference layout)
-        */}
-        <div className="border-t border-[#f8c12c]/20 mt-14 sm:mt-18 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[#94a3b8]">
+        {/* Bottom Copyright & Legal Links (Shifted to bottom-right, no top border line) */}
+        <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-start sm:items-center justify-end gap-2 sm:gap-4 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[#94a3b8]">
           <div>
             © 2026 EMPYREAN, IIM JAMMU. ALL RIGHTS RESERVED.
           </div>
-
-          <div className="flex items-center gap-3 text-[#cbd5e1]/65">
+          <span className="hidden sm:inline text-[#f8c12c]/40">•</span>
+          <div className="flex items-center gap-2.5 text-[#cbd5e1]/65">
             <a
               href="#privacy"
               onClick={(e) => {

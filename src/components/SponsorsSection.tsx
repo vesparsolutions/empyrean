@@ -19,77 +19,70 @@ export const SPONSORS_LIST: SponsorLogoItem[] = [
     name: 'State Bank of India',
     logo: '/sponsors/sbi.webp',
     category: 'Title Banking Partner',
-    logoClassName: 'h-10 sm:h-12 md:h-14 max-w-[150px] sm:max-w-[180px] md:max-w-[210px]',
+    logoClassName: 'h-9 sm:h-11 md:h-12 max-w-[150px] sm:max-w-[180px] md:max-w-[200px]',
   },
   {
     id: 'cbi',
     name: 'Central Bank of India',
     logo: '/sponsors/cbi.webp',
     category: 'Associate Banking Partner',
-    // 3x Size Multiplier
-    logoClassName: 'h-16 sm:h-20 md:h-24 max-w-[240px] sm:max-w-[280px] md:max-w-[320px] scale-[1.25] sm:scale-[1.35]',
+    logoClassName: 'h-8 sm:h-10 md:h-11 max-w-[150px] sm:max-w-[180px] md:max-w-[200px]',
   },
   {
     id: 'bank-of-baroda',
     name: 'Bank of Baroda',
     logo: '/sponsors/bank-of-baroda.webp',
     category: 'Global Banking Partner',
-    // 2x Size Multiplier
-    logoClassName: 'h-12 sm:h-16 md:h-18 max-w-[220px] sm:max-w-[260px] md:max-w-[300px] scale-[1.15] sm:scale-[1.2]',
+    logoClassName: 'h-7 sm:h-9 md:h-10 max-w-[170px] sm:max-w-[200px] md:max-w-[220px]',
   },
   {
     id: 'canara-bank',
     name: 'Canara Bank',
     logo: '/sponsors/canara-bank.webp',
     category: 'Public Sector Banking Partner',
-    // 3x Size Multiplier
-    logoClassName: 'h-16 sm:h-20 md:h-24 max-w-[240px] sm:max-w-[280px] md:max-w-[320px] scale-[1.25] sm:scale-[1.35]',
+    logoClassName: 'h-8 sm:h-10 md:h-11 max-w-[150px] sm:max-w-[180px] md:max-w-[200px]',
   },
   {
     id: 'rassense',
     name: 'Rassense',
     logo: '/sponsors/rassense.webp',
     category: 'Hospitality & Culinary Partner',
-    // 3x Size Multiplier
-    logoClassName: 'h-16 sm:h-20 md:h-24 max-w-[240px] sm:max-w-[280px] md:max-w-[320px] scale-[1.25] sm:scale-[1.35]',
+    logoClassName: 'h-8 sm:h-10 md:h-11 max-w-[150px] sm:max-w-[180px] md:max-w-[200px]',
   },
   {
     id: 'jk-bank',
     name: 'J&K Bank',
     logo: '/sponsors/jk-bank.webp',
     category: 'Regional Heritage Partner',
-    logoClassName: 'h-10 sm:h-12 md:h-14 max-w-[150px] sm:max-w-[180px] md:max-w-[210px]',
+    logoClassName: 'h-9 sm:h-10 md:h-12 max-w-[150px] sm:max-w-[180px] md:max-w-[200px]',
   },
   {
     id: 'coca-cola',
     name: 'Coca-Cola',
     logo: '/sponsors/coca-cola.webp',
     category: 'Official Refreshment Partner',
-    logoClassName: 'h-10 sm:h-12 md:h-14 max-w-[150px] sm:max-w-[180px] md:max-w-[210px]',
+    logoClassName: 'h-9 sm:h-11 md:h-12 max-w-[150px] sm:max-w-[180px] md:max-w-[200px]',
   },
   {
     id: 'zencabs',
     name: 'Zen Cabs',
     logo: '/sponsors/zencabs.webp',
     category: 'Official Mobility Partner',
-    // 2x Size Multiplier
-    logoClassName: 'h-14 sm:h-18 md:h-22 max-w-[170px] sm:max-w-[200px] md:max-w-[230px] scale-[1.2] sm:scale-[1.3]',
+    logoClassName: 'h-11 sm:h-13 md:h-15 max-w-[80px] sm:max-w-[95px] md:max-w-[110px]',
   },
   {
     id: 'vespar-solutions',
     name: 'Vespar Solutions',
     logo: '/sponsors/vespar-solutions.webp',
     category: 'Digital Experience Partner',
-    // 2x Size Multiplier
-    logoClassName: 'h-14 sm:h-18 md:h-22 max-w-[170px] sm:max-w-[200px] md:max-w-[230px] scale-[1.2] sm:scale-[1.3]',
+    logoClassName: 'h-10 sm:h-12 md:h-14 max-w-[100px] sm:max-w-[120px] md:max-w-[135px]',
   },
   {
     id: 'nescafe',
     name: 'Nescafé',
     logo: '/sponsors/nescafe.webp',
     category: 'Official Beverage Partner',
-    // 1.5x Size Multiplier
-    logoClassName: 'h-12 sm:h-15 md:h-17 max-w-[190px] sm:max-w-[220px] md:max-w-[250px] scale-[1.1] sm:scale-[1.15]',
+    logoClassName: 'h-8 sm:h-10 md:h-11 max-w-[160px] sm:max-w-[190px] md:max-w-[210px]',
   },
 ];
 
@@ -142,32 +135,32 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
         </h2>
       </div>
 
-      {/* 4. Single-Row Classic Logo Marquee: 15% margin on both sides (w-[70%]), rotating in exact order */}
+      {/* 4. Single-Row Classic Logo Marquee: elegant responsive width and smooth mask */}
       <div className="relative z-10 w-full flex justify-center py-4 mb-2 sm:mb-4">
         <div
-          className="relative w-[70%] max-w-6xl mx-auto overflow-hidden py-6 sm:py-8"
+          className="relative w-[90%] sm:w-[84%] md:w-[78%] max-w-6xl mx-auto overflow-hidden py-4 sm:py-6"
           style={{
             maskImage:
-              'linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%)',
+              'linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)',
             WebkitMaskImage:
-              'linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%)',
+              'linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)',
           }}
           aria-label="Festival Sponsors rotating in order"
         >
           {/* Single continuous row moving smoothly Left-to-Right */}
-          <div className="animate-marquee-ltr flex items-center gap-14 sm:gap-20 md:gap-24">
+          <div className="animate-marquee-ltr flex items-center gap-12 sm:gap-16 md:gap-20">
             {[...SPONSORS_LIST, ...SPONSORS_LIST].map((sponsor, idx) => (
               <div
                 key={`${sponsor.id}-${idx}`}
                 onClick={onViewPartners}
-                className="shrink-0 flex items-center justify-center opacity-85 hover:opacity-100 hover:scale-105 transition-all duration-300 cursor-pointer select-none px-2"
+                className="shrink-0 flex items-center justify-center h-16 sm:h-20 md:h-22 px-3 sm:px-4 opacity-80 hover:opacity-100 transition-all duration-300 cursor-pointer select-none"
                 title={`${sponsor.name} (${sponsor.category}) — Click to view partners`}
               >
                 <img
                   src={sponsor.logo}
                   alt={sponsor.name}
-                  className={`w-auto object-contain shrink-0 filter drop-shadow-[0_2px_8px_rgba(90,40,10,0.10)] hover:drop-shadow-[0_4px_16px_rgba(180,83,9,0.25)] transition-all duration-300 ${
-                    sponsor.logoClassName || 'h-10 sm:h-12 md:h-14 max-w-[150px] sm:max-w-[180px] md:max-w-[210px]'
+                  className={`w-auto object-contain shrink-0 filter drop-shadow-[0_2px_8px_rgba(90,40,10,0.08)] hover:drop-shadow-[0_4px_16px_rgba(180,83,9,0.20)] transition-all duration-300 hover:scale-105 ${
+                    sponsor.logoClassName || 'h-9 sm:h-11 md:h-12 max-w-[150px] sm:max-w-[180px] md:max-w-[200px]'
                   }`}
                   loading="lazy"
                 />

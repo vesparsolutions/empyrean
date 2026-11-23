@@ -21,7 +21,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     description:
       'India’s largest banking institution with two centuries of public trust and nationwide reach. Partnering with Empyrean 2026, SBI empowers the young management visionaries and student innovators of IIM Jammu to shape the future of Indian enterprise.',
     website: 'https://sbi.co.in',
-    logoClassName: 'max-h-20 sm:max-h-26 md:max-h-30 max-w-[85%]',
+    logoClassName: 'max-h-20 sm:max-h-26 md:max-h-28 max-w-[85%]',
   },
   {
     id: 'cbi',
@@ -31,8 +31,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     description:
       'Founded in 1911 as India’s first truly indigenous commercial bank. Central Bank of India joins Empyrean 2026 to foster principled commerce, financial wisdom, and academic excellence among future corporate leaders.',
     website: 'https://centralbankofindia.co.in',
-    // 3x Size Multiplier: Expands fully across plaque with bold presence
-    logoClassName: 'max-h-44 sm:max-h-52 md:max-h-60 max-w-[98%] w-auto scale-[1.3] sm:scale-[1.4] md:scale-[1.5]',
+    logoClassName: 'max-h-20 sm:max-h-24 md:max-h-28 max-w-[85%]',
   },
   {
     id: 'bank-of-baroda',
@@ -42,8 +41,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     description:
       'Established in 1908 by Maharaja Sayajirao Gaekwad III, Bank of Baroda spans 17 nations. Through digital platforms like bob World, it inspires IIM Jammu delegates to bridge grassroots innovation with global finance.',
     website: 'https://bankofbaroda.in',
-    // 2x Size Multiplier: Wide horizontal presence spanning plaque
-    logoClassName: 'max-h-36 sm:max-h-44 md:max-h-48 max-w-[98%] w-auto scale-[1.15] sm:scale-[1.25] md:scale-[1.3]',
+    logoClassName: 'max-h-16 sm:max-h-20 md:max-h-24 max-w-[88%]',
   },
   {
     id: 'canara-bank',
@@ -53,8 +51,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     description:
       'Built upon the philanthropic vision of Ammembal Subba Rao Pai in 1906. Canara Bank partners with Empyrean to champion collegiate innovation, research, and inclusive economic growth.',
     website: 'https://canarabank.com',
-    // 3x Size Multiplier: Amplified to fill plaque with prominent mark and typography
-    logoClassName: 'max-h-44 sm:max-h-52 md:max-h-60 max-w-[98%] w-auto scale-[1.3] sm:scale-[1.4] md:scale-[1.5]',
+    logoClassName: 'max-h-20 sm:max-h-24 md:max-h-28 max-w-[85%]',
   },
   {
     id: 'rassense',
@@ -64,8 +61,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     description:
       'India’s premier institutional food services and hospitality innovator. Rassense powers Empyrean 2026 with exceptional gastronomy, catering to thousands of festival attendees, celebrity artists, and delegates with royal warmth.',
     website: 'https://rassense.com',
-    // 3x Size Multiplier: Rich prominent presence filling plaque
-    logoClassName: 'max-h-44 sm:max-h-52 md:max-h-60 max-w-[98%] w-auto scale-[1.3] sm:scale-[1.4] md:scale-[1.5]',
+    logoClassName: 'max-h-20 sm:max-h-24 md:max-h-28 max-w-[85%]',
   },
   {
     id: 'jk-bank',
@@ -75,7 +71,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     description:
       'Incepted in 1938 under royal charter, J&K Bank anchors regional prosperity. Welcoming delegates to the City of Temples, the bank celebrates the confluence of Himalayan heritage with modern management excellence at IIM Jammu.',
     website: 'https://jkbank.com',
-    logoClassName: 'max-h-20 sm:max-h-26 md:max-h-30 max-w-[85%]',
+    logoClassName: 'max-h-20 sm:max-h-24 md:max-h-28 max-w-[85%]',
   },
   {
     id: 'coca-cola',
@@ -85,7 +81,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     description:
       'A universal symbol of music, joy, and celebration for over 135 years. Coca-Cola electrifies Empyrean 2026, keeping attendees refreshed across intense competitions, cultural showdowns, and high-octane star nights.',
     website: 'https://coca-cola.com',
-    logoClassName: 'max-h-20 sm:max-h-26 md:max-h-30 max-w-[85%]',
+    logoClassName: 'max-h-20 sm:max-h-26 md:max-h-28 max-w-[85%]',
   },
   {
     id: 'zencabs',
@@ -94,8 +90,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     lead: 'Dependable regional mobility ensuring safe, seamless, round-the-clock connectivity.',
     description:
       'Jammu’s trusted fleet service, delivering punctual transit across airports, railways, and highway hubs. Zen Cabs connects artists, jury members, and university delegations directly to the scenic IIM Jammu Jagti campus.',
-    // 2x Size Multiplier: Tall squarish logo fills plaque vertically & horizontally
-    logoClassName: 'max-h-48 sm:max-h-56 md:max-h-64 h-full max-w-[90%] scale-[1.2] sm:scale-[1.3] md:scale-[1.4]',
+    logoClassName: 'max-h-28 sm:max-h-36 md:max-h-40 max-w-[65%]',
   },
   {
     id: 'vespar-solutions',
@@ -105,8 +100,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     description:
       'A specialized digital engineering studio crafting fluid web architectures and intelligent systems. Vespar powers Empyrean’s interactive digital presence, bringing the royal splendour of the festival to screens worldwide.',
     website: 'https://vesparsolutions.in',
-    // 2x Size Multiplier: Bold squarish logo fills plaque with high clarity
-    logoClassName: 'max-h-48 sm:max-h-56 md:max-h-64 h-full max-w-[90%] scale-[1.2] sm:scale-[1.3] md:scale-[1.4]',
+    logoClassName: 'max-h-24 sm:max-h-32 md:max-h-36 max-w-[70%]',
   },
   {
     id: 'nescafe',
@@ -116,8 +110,7 @@ export const PARTNERS_DATA: PartnerItem[] = [
     description:
       'Crafted from hand-selected beans with rich artisanal aroma. Nescafé keeps IIM Jammu’s sharpest minds and headline performers energized across late-night case preps, dawn sound checks, and spirited festival showdowns.',
     website: 'https://nescafe.com',
-    // 1.5x Size Multiplier: Harmonious enlarged presence
-    logoClassName: 'max-h-32 sm:max-h-40 md:max-h-44 max-w-[96%] scale-[1.1] sm:scale-[1.18] md:scale-[1.25]',
+    logoClassName: 'max-h-18 sm:max-h-22 md:max-h-26 max-w-[85%]',
   },
 ];
 
