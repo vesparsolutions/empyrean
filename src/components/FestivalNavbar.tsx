@@ -54,6 +54,7 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
     const handleScroll = () => {
       const artistsSection = document.getElementById('artists');
       const eventsSection = document.getElementById('events');
+      const gallerySection = document.getElementById('gallery');
       const sponsorsSection = document.getElementById('sponsors');
       const visitUsSection = document.getElementById('visit-us');
 
@@ -66,7 +67,11 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
       else if (sponsorsSection && sponsorsSection.getBoundingClientRect().top <= 72) {
         setCurrentTheme('parchment');
       }
-      // 2. If user is over dark Events section, switch to 'navy'
+      // 3. If user is over dark Gallery/Aftermovie section, switch to 'navy'
+      else if (gallerySection && gallerySection.getBoundingClientRect().top <= 72) {
+        setCurrentTheme('navy');
+      }
+      // 4. If user is over dark Events section, switch to 'navy'
       else if (eventsSection && eventsSection.getBoundingClientRect().top <= 72) {
         setCurrentTheme('navy');
       }
@@ -169,14 +174,17 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
   // At progress = 0: dead center of viewport (50vh)
   // At progress = 1: docked in navbar (vertical center ~38px from top)
   // -------------------------------------------------------------
+  // Base upward offset at progress 0 so logo sits close to canopy
+  const baseUpwardOffsetVh = -7;
+  const currentBaseY = baseUpwardOffsetVh * (1 - logoProgress);
   const scale = prefersReducedMotion ? 1 : 1.0 - logoProgress * 0.76;
-  const ty = prefersReducedMotion ? 0 : -logoProgress * 50;
+  const ty = prefersReducedMotion ? 0 : currentBaseY - logoProgress * 50;
   const targetPx = prefersReducedMotion ? 0 : logoProgress * 38;
 
   const logoTransform = prefersReducedMotion
     ? 'none'
     : logoProgress <= 0.05
-    ? `translate3d(${mousePos.x * -4}px, ${mousePos.y * -2}px, 0)`
+    ? `translate3d(${mousePos.x * -4}px, calc(${baseUpwardOffsetVh}vh + ${mousePos.y * -2}px), 0)`
     : `translate3d(0, calc(${ty}vh + ${targetPx}px), 0) scale(${scale})`;
 
   // Headings & Navbar background opacity (fades in as logo approaches top)
@@ -378,7 +386,7 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
             className="relative w-[88%] sm:w-[80%] md:w-[72%] lg:w-[65%] max-w-[380px] sm:max-w-[480px] md:max-w-[580px] lg:max-w-[660px] xl:max-w-[720px] my-1 sm:my-2 cursor-pointer pointer-events-auto"
             onClick={handleHeroLogoClick}
           >
-            {/* Ambient Warm Aura Glow */}
+            {/* Ambient Warm Aura Glow (Subtle and clean as earlier) */}
             <div
               className={`absolute inset-0 rounded-full blur-3xl pointer-events-none -z-10 scale-95 transition-opacity ${
                 isParchment ? 'bg-[#b45309]/15' : 'bg-[#f8c12c]/20'

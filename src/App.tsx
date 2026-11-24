@@ -9,6 +9,7 @@ import { VisitUsSection } from './components/VisitUsSection';
 import { FestivalFooter } from './components/FestivalFooter';
 import { RegistrationModal } from './components/RegistrationModal';
 import { PartnersPage } from './components/PartnersPage';
+import { CinematicGallerySection } from './components/CinematicGallerySection';
 
 export function App() {
   const [isAssetsLoaded, setIsAssetsLoaded] = useState(false);
@@ -74,6 +75,10 @@ export function App() {
       } else if (section === 'events') {
         setTimeout(() => {
           document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
+        }, 150);
+      } else if (section === 'gallery' || section === 'aftermovie') {
+        setTimeout(() => {
+          document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
         }, 150);
       } else if (section === 'experience') {
         setTimeout(() => {
@@ -148,7 +153,13 @@ export function App() {
                 onRegisterClick={handleOpenRegistration}
               />
 
-              {/* Section 4: Our Sponsors Section (Light Parchment Background with Rotating Sponsors) */}
+              {/* Section 4: Complete Cinematic Video + Dual-Row Infinite Photo Gallery */}
+              <CinematicGallerySection
+                prefersReducedMotion={prefersReducedMotion}
+                onRegisterClick={handleOpenRegistration}
+              />
+
+              {/* Section 5: Our Sponsors Section (Light Parchment Background with Rotating Sponsors) */}
               <SponsorsSection
                 onViewPartners={() => handleNavigate('partners')}
                 onRegisterClick={handleOpenRegistration}
@@ -166,6 +177,19 @@ export function App() {
           )}
         </main>
       )}
+
+      {/* 4. Global Fixed Screen Border: Sticks to the whole screen */}
+      <div
+        className="fixed inset-0 pointer-events-none z-40 overflow-hidden"
+        aria-hidden="true"
+      >
+        <img
+          src="/hero/screen-border.webp"
+          alt=""
+          className="w-full h-full object-fill pointer-events-none select-none"
+          draggable={false}
+        />
+      </div>
 
       {/* 3. Interactive Registration Modal */}
       <RegistrationModal

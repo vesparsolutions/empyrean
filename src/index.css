@@ -385,3 +385,31 @@
   }
 }
 
+
+/* Infinite Dual-Row Photo Gallery Marquee (Right to Left) */
+@keyframes marqueeRightToLeft {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-rtl {
+  display: flex;
+  width: max-content;
+  animation: marqueeRightToLeft var(--marquee-duration, 80s) linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-rtl:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-rtl {
+    animation: none !important;
+    transform: none !important;
+  }
+}

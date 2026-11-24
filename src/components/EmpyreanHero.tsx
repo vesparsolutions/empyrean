@@ -323,81 +323,114 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
           ═══════════════════════════════════════════════════════════════ */}
           <div className="absolute inset-0 z-0 bg-[#071126]" />
 
-          {/* ═══════════════════════════════════════════════════════════════
-              LAYER 1 — Full-screen ornate folk-art border frame
-              Reference: colorful red/gold border wrapping the full viewport
-          ═══════════════════════════════════════════════════════════════ */}
-          <div
-            className="absolute inset-0 z-[2] pointer-events-none"
-            style={{
-              opacity: Math.max(0, 1 - logoProgress * 2.5),
-            }}
-          >
-            <img
-              src="/hero/01_ornate_border_frame.webp"
-              alt=""
-              className="w-full h-full object-fill"
-              loading="eager"
-              draggable={false}
-            />
-          </div>
+          {/* LAYER 1: Full-screen border is now managed globally at the root layout (sticking to the whole screen) */}
 
           {/* ═══════════════════════════════════════════════════════════════
               LAYER 2 — Floral toran canopy hanging from the top center
-              Reference: wide decorative hanging arch with bells, spans ~70% of top
+              Reference: wide decorative hanging arch with bells, spans ~52% of top
           ═══════════════════════════════════════════════════════════════ */}
           <div
             className="absolute top-0 left-1/2 z-[8] pointer-events-none"
             style={{
-              width: '70%',
-              maxWidth: '1000px',
-              transform: `translateX(-50%) translateY(calc(-10% + ${logoProgress * -22}%))`,
+              width: '52%',
+              maxWidth: '820px',
+              minWidth: '320px',
+              transform: `translateX(-50%) translateY(${logoProgress * -25}%)`,
               opacity: Math.max(0, 1 - logoProgress * 2.8),
             }}
           >
             <img
               src="/hero/02_floral_canopy.webp"
-              alt=""
-              className="w-full h-auto object-contain"
+              alt="Floral Canopy"
+              className="w-full h-auto object-contain block"
               loading="eager"
               draggable={false}
             />
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════
-              LAYER 3 — Gold cloud left (upper-left, below canopy left side)
-              Reference: small golden clouds about 20% from top, 8% from left
+              LAYER 3 & 4 — Transparent Gold Line-Art Clouds + Sparkle Stars
           ═══════════════════════════════════════════════════════════════ */}
+          {/* Left Gold Cloud */}
           <div
             className="absolute z-[5] pointer-events-none"
             style={{
-              left: '8%',
+              left: '11%',
               top: '18%',
-              width: '16%',
-              maxWidth: '220px',
+              width: '14%',
+              maxWidth: '210px',
+              minWidth: '110px',
               opacity: Math.max(0, 1 - logoProgress * 3),
               transform: `translate(${logoProgress * -10}vw, ${logoProgress * -4}vh)`,
             }}
           >
-            <img src="/hero/03_gold_cloud_left.webp" alt="" className="w-full h-auto" loading="eager" draggable={false} />
+            <img src="/hero/03_gold_cloud_left.webp" alt="" className="w-full h-auto object-contain" loading="eager" draggable={false} />
           </div>
 
-          {/* ═══════════════════════════════════════════════════════════════
-              LAYER 4 — Gold cloud right (upper-right, symmetric to left cloud)
-              Reference: ~74% from left, 18% from top
-          ═══════════════════════════════════════════════════════════════ */}
+          {/* Right Gold Cloud */}
           <div
             className="absolute z-[5] pointer-events-none"
             style={{
-              right: '8%',
+              right: '11%',
               top: '18%',
               width: '14%',
-              maxWidth: '200px',
+              maxWidth: '210px',
+              minWidth: '110px',
               opacity: Math.max(0, 1 - logoProgress * 3),
               transform: `translate(${logoProgress * 10}vw, ${logoProgress * -4}vh)`,
             }}
           >
-            <img src="/hero/04_gold_cloud_right.webp" alt="" className="w-full h-auto" loading="eager" draggable={false} />
+            <img src="/hero/04_gold_cloud_right.webp" alt="" className="w-full h-auto object-contain" loading="eager" draggable={false} />
+          </div>
+
+          {/* Twinkling 4-Point Golden Sparkle Stars from Reference */}
+          <div
+            className="absolute z-[4] pointer-events-none transition-opacity duration-500"
+            style={{
+              left: '11.5%',
+              top: '40%',
+              opacity: Math.max(0, 1 - logoProgress * 3),
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="#f8c12c" className="w-4 h-4 animate-pulse drop-shadow-[0_0_8px_rgba(248,193,44,0.8)]">
+              <path d="M12 0C12 7.5 7.5 12 0 12C7.5 12 12 16.5 12 24C12 16.5 16.5 12 24 12C16.5 12 12 7.5 12 0Z" />
+            </svg>
+          </div>
+          <div
+            className="absolute z-[4] pointer-events-none transition-opacity duration-500"
+            style={{
+              left: '26.8%',
+              top: '19%',
+              opacity: Math.max(0, 1 - logoProgress * 3),
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="#f8c12c" className="w-3.5 h-3.5 animate-pulse drop-shadow-[0_0_8px_rgba(248,193,44,0.8)]" style={{ animationDelay: '0.7s' }}>
+              <path d="M12 0C12 7.5 7.5 12 0 12C7.5 12 12 16.5 12 24C12 16.5 16.5 12 24 12C16.5 12 12 7.5 12 0Z" />
+            </svg>
+          </div>
+          <div
+            className="absolute z-[4] pointer-events-none transition-opacity duration-500"
+            style={{
+              right: '28.8%',
+              top: '23.5%',
+              opacity: Math.max(0, 1 - logoProgress * 3),
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="#f8c12c" className="w-3 h-3 animate-pulse drop-shadow-[0_0_8px_rgba(248,193,44,0.8)]" style={{ animationDelay: '1.4s' }}>
+              <path d="M12 0C12 7.5 7.5 12 0 12C7.5 12 12 16.5 12 24C12 16.5 16.5 12 24 12C16.5 12 12 7.5 12 0Z" />
+            </svg>
+          </div>
+          <div
+            className="absolute z-[4] pointer-events-none transition-opacity duration-500"
+            style={{
+              right: '12%',
+              top: '40.5%',
+              opacity: Math.max(0, 1 - logoProgress * 3),
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="#f8c12c" className="w-3.5 h-3.5 animate-pulse drop-shadow-[0_0_8px_rgba(248,193,44,0.8)]" style={{ animationDelay: '0.3s' }}>
+              <path d="M12 0C12 7.5 7.5 12 0 12C7.5 12 12 16.5 12 24C12 16.5 16.5 12 24 12C16.5 12 12 7.5 12 0Z" />
+            </svg>
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════
@@ -405,7 +438,7 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
               Reference: mountains span the full width along the bottom ~35vh tall
           ═══════════════════════════════════════════════════════════════ */}
           <div
-            className="absolute bottom-0 left-0 right-0 z-[6] pointer-events-none"
+            className="absolute -bottom-6 sm:-bottom-8 md:-bottom-10 left-0 right-0 z-[6] pointer-events-none"
             style={{
               opacity: Math.max(0, 1 - logoProgress * 2),
               transform: `translateY(${logoProgress * 15}%)`,
@@ -414,88 +447,112 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
             <img
               src="/hero/05_mountains_and_forest.webp"
               alt=""
-              style={{ width: '100%', height: 'auto', maxHeight: '38vh', objectFit: 'cover', objectPosition: 'center top', display: 'block' }}
+              style={{ width: '100%', height: 'auto', maxHeight: '42vh', objectFit: 'cover', objectPosition: 'center bottom', display: 'block' }}
               loading="eager"
               draggable={false}
             />
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════
-              LAYER 6 — Jammu truck / bus (left side, bottom-left quadrant)
-              Reference: colorful Jammu truck ~25-30% wide peeking from left edge
+              LAYER 6 — Jammu truck (Truck(Presents IIM Jammu))
+              Positioned in bottom-left corner attached to left border,
+              overlapping behind the bottom & left screen border layers
           ═══════════════════════════════════════════════════════════════ */}
           <div
             className="absolute z-[7] pointer-events-none"
             style={{
-              left: '-1%',
-              bottom: '3%',
-              width: '28%',
-              maxWidth: '400px',
+              left: '14px',
+              bottom: '2px',
+              width: '18%',
+              minWidth: '180px',
+              maxWidth: '310px',
               opacity: Math.max(0, 1 - logoProgress * 2.2),
               transform: `translateX(${logoProgress * -26}vw)`,
             }}
           >
             <img
-              src="/right-elements/jammu-truck.webp"
-              alt=""
-              className="w-full h-auto object-contain"
+              src="/hero/Truck(Presents%20IIM%20Jammu).webp"
+              alt="IIM Jammu Presents - Jammu Truck Art"
+              className="w-full h-auto object-contain block"
               loading="eager"
               draggable={false}
             />
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════
-              LAYER 7 — Vintage microphone (right side, mid-lower area)
-              Reference: retro chrome mic ~88% from left, ~45% from top, ~6% wide
-          ═══════════════════════════════════════════════════════════════ */}
-          <div
-            className="absolute z-[9] pointer-events-none"
-            style={{
-              right: '6%',
-              bottom: '12%',
-              width: '6%',
-              maxWidth: '80px',
-              opacity: Math.max(0, 1 - logoProgress * 2.5),
-              transform: `translate(${logoProgress * 14}vw, ${logoProgress * 10}vh)`,
-            }}
-          >
-            <img src="/hero/07_vintage_microphone.webp" alt="" className="w-full h-auto" loading="eager" draggable={false} />
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════════════
-              LAYER 8 — Vinyl record (bottom-right, partially behind mic)
-              Reference: vinyl ~12% wide, bottom-right corner, z below mic
-          ═══════════════════════════════════════════════════════════════ */}
-          <div
-            className="absolute z-[8] pointer-events-none"
-            style={{
-              right: '3%',
-              bottom: '3%',
-              width: '12%',
-              maxWidth: '160px',
-              opacity: Math.max(0, 1 - logoProgress * 2.5),
-              transform: `translate(${logoProgress * 16}vw, ${logoProgress * 12}vh)`,
-            }}
-          >
-            <img src="/hero/08_vinyl_record_cd.webp" alt="" className="w-full h-auto" loading="eager" draggable={false} />
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════════════
-              LAYER 9 — Pink lotus (bottom-right corner, large, behind mic+vinyl)
-              Reference: big pink lotus ~20% wide, anchored to bottom-right corner
+              LAYER 7 — Vinyl record (disc touching right border, behind lotus)
+              Shifted right to touch the right border
           ═══════════════════════════════════════════════════════════════ */}
           <div
             className="absolute z-[7] pointer-events-none"
             style={{
-              right: '-1%',
-              bottom: '-1%',
-              width: '20%',
-              maxWidth: '280px',
+              right: '-10px',
+              bottom: '0px',
+              width: '18%',
+              minWidth: '210px',
+              maxWidth: '320px',
+              opacity: Math.max(0, 1 - logoProgress * 2.5),
+              transform: `translate(${logoProgress * 16}vw, ${logoProgress * 12}vh)`,
+            }}
+          >
+            <img
+              src="/hero/08_vinyl_record_cd.webp"
+              alt="Vinyl Record"
+              className="w-full h-auto object-contain block"
+              loading="eager"
+              draggable={false}
+            />
+          </div>
+
+          {/* ═══════════════════════════════════════════════════════════════
+              LAYER 8 — Vintage microphone (stands behind lotus, stem connects with vinyl)
+              Tilted slightly left, positioned above vinyl
+          ═══════════════════════════════════════════════════════════════ */}
+          <div
+            className="absolute z-[8] pointer-events-none"
+            style={{
+              right: '7.5%',
+              bottom: '17%',
+              width: '7%',
+              minWidth: '80px',
+              maxWidth: '115px',
+              opacity: Math.max(0, 1 - logoProgress * 2.5),
+              transform: `translate(${logoProgress * 14}vw, ${logoProgress * 10}vh) rotate(-14deg)`,
+              transformOrigin: 'bottom center',
+            }}
+          >
+            <img
+              src="/hero/07_vintage_microphone.webp"
+              alt="Vintage Microphone"
+              className="w-full h-auto object-contain block"
+              loading="eager"
+              draggable={false}
+            />
+          </div>
+
+          {/* ═══════════════════════════════════════════════════════════════
+              LAYER 9 — Pink lotus (IN FOREGROUND, overlapping vinyl & mic stem)
+              Reduced size slightly as requested
+          ═══════════════════════════════════════════════════════════════ */}
+          <div
+            className="absolute z-[9] pointer-events-none"
+            style={{
+              right: '2%',
+              bottom: '-4px',
+              width: '19.5%',
+              minWidth: '230px',
+              maxWidth: '350px',
               opacity: Math.max(0, 1 - logoProgress * 2),
               transform: `translate(${logoProgress * 18}vw, ${logoProgress * 14}vh)`,
             }}
           >
-            <img src="/hero/06_pink_lotus.webp" alt="" className="w-full h-auto" loading="eager" draggable={false} />
+            <img
+              src="/hero/06_pink_lotus.webp"
+              alt="Pink Lotus"
+              className="w-full h-auto object-contain block drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]"
+              loading="eager"
+              draggable={false}
+            />
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════
