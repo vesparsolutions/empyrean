@@ -183,20 +183,9 @@ export const EventsSection: React.FC<EventsSectionProps> = () => {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
-          <span className="font-sub text-xs sm:text-sm uppercase tracking-[0.35em] text-[#f8c12c]/90 font-medium inline-block mb-3">
-            Arenas of Excellence
-          </span>
-          <h2 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-[#fff6e0] drop-shadow-[0_4px_30px_rgba(248,193,44,0.25)] mb-4">
+          <h2 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-[#fff6e0] drop-shadow-[0_4px_30px_rgba(248,193,44,0.25)]">
             Events
           </h2>
-          <p className="font-editorial italic text-lg sm:text-xl md:text-2xl text-[#f8c12c]/75 max-w-lg mx-auto leading-relaxed mt-1">
-            Three days across Cultural, Sports & Management
-          </p>
-          {/* Subtle Warm Divider */}
-          <div
-            className="w-20 h-px bg-gradient-to-r from-transparent via-[#f8c12c]/40 to-transparent mx-auto mt-6"
-            aria-hidden="true"
-          />
         </div>
 
         {/* Pure Open Editorial Stats with Smooth Luxury Count-Up & Reveal */}

@@ -47,12 +47,9 @@ export const VisitUsSection: React.FC = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 pb-20 sm:pb-28">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-          <h2 className="font-heading text-4xl sm:text-5xl md:text-6xl tracking-tight text-[#fff6e0] drop-shadow-[0_4px_24px_rgba(248,193,44,0.25)] mb-3">
+          <h2 className="font-heading text-4xl sm:text-5xl md:text-6xl tracking-tight text-[#fff6e0] drop-shadow-[0_4px_24px_rgba(248,193,44,0.25)]">
             Visit Us
           </h2>
-          <p className="font-editorial italic text-lg sm:text-xl md:text-2xl text-[#f8c12c]/75 max-w-xl mx-auto leading-snug">
-            Find your way to the foothills of the Trikuta Mountains.
-          </p>
         </div>
 
         {/* Content Grid: Left details card + Right Google Map iframe */}
