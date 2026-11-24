@@ -4,16 +4,21 @@ import {
   MapPin,
   Mail,
   Phone,
+  ExternalLink,
 } from 'lucide-react';
 
 interface FestivalFooterProps {
   onRegisterClick?: (tier?: string) => void;
   onPartnersClick?: () => void;
+  onOpenPrivacyPolicy?: () => void;
+  onOpenTerms?: () => void;
 }
 
 export const FestivalFooter: React.FC<FestivalFooterProps> = ({
   onRegisterClick,
   onPartnersClick,
+  onOpenPrivacyPolicy,
+  onOpenTerms,
 }) => {
   const handleScrollTo = (id: string) => {
     if (id === 'top') {
@@ -182,44 +187,43 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
                   onClick={() => handleScrollTo('artists')}
                   className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
                 >
-                  About Empyrean
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => handleScrollTo('artists')}
-                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
-                >
                   Artists
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  onClick={() => handleScrollTo('hero-scroll-container')}
+                  onClick={() => handleScrollTo('events')}
                   className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
                 >
-                  Experience
+                  Events
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  onClick={() => onRegisterClick?.()}
+                  onClick={() => handleScrollTo('gallery')}
                   className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
                 >
-                  Schedule
+                  Moments &amp; Memories
                 </button>
               </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onRegisterClick?.('Gold All-Access Pass')}
-                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
+              <li className="pt-1">
+                <a
+                  href="https://forms.gle/iZxtVb1twASMDSQv7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    if (onRegisterClick) {
+                      e.preventDefault();
+                      onRegisterClick();
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 text-[#f8c12c] font-semibold hover:translate-x-1 transition-all duration-200 cursor-pointer group"
                 >
-                  Passes
-                </button>
+                  <span>Register Now</span>
+                  <ExternalLink className="w-3 h-3 text-[#f8c12c] shrink-0 transition-transform group-hover:translate-x-0.5" />
+                </a>
               </li>
             </ul>
           </div>
@@ -228,48 +232,11 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
           <div className="hidden lg:block w-[1px] bg-gradient-to-b from-transparent via-[#f8c12c]/30 to-transparent self-stretch min-h-[170px] my-2 shrink-0" />
 
           {/* COLUMN 3: Explore */}
-          <div className="w-full sm:w-auto lg:w-[15%] xl:w-[14%] flex flex-col">
+          <div className="w-full sm:w-auto lg:w-[17%] xl:w-[16%] flex flex-col">
             <h4 className="font-mono text-xs sm:text-sm font-semibold uppercase tracking-[0.25em] text-[#f8c12c] mb-4">
               EXPLORE
             </h4>
             <ul className="space-y-2.5 text-xs sm:text-sm text-[#cbd5e1]/80">
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onRegisterClick?.()}
-                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
-                >
-                  Competitions
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onRegisterClick?.()}
-                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
-                >
-                  Workshops
-                </button>
-              </li>
-              <li>
-                <a
-                  href="https://maps.google.com/?q=IIM+Jammu+Jagti"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 block text-left"
-                >
-                  Campus Map
-                </a>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => handleScrollTo('hero-scroll-container')}
-                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
-                >
-                  Gallery
-                </button>
-              </li>
               <li>
                 <button
                   type="button"
@@ -282,10 +249,54 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
               <li>
                 <button
                   type="button"
-                  onClick={() => onRegisterClick?.()}
+                  onClick={() => handleScrollTo('sponsors')}
                   className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
                 >
-                  FAQs
+                  Our Sponsors
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleScrollTo('visit-us')}
+                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left"
+                >
+                  Visit Campus
+                </button>
+              </li>
+              <li>
+                <a
+                  href="https://www.iimj.ac.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 inline-flex items-center gap-1 text-left text-[#cbd5e1]/85 group"
+                >
+                  <span>IIM Jammu Website</span>
+                  <ExternalLink className="w-3 h-3 text-[#f8c12c]/70 shrink-0 transition-transform group-hover:translate-x-0.5" />
+                </a>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onOpenPrivacyPolicy) onOpenPrivacyPolicy();
+                    else window.location.hash = '#privacy';
+                  }}
+                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left text-[#cbd5e1]/70"
+                >
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onOpenTerms) onOpenTerms();
+                    else window.location.hash = '#terms';
+                  }}
+                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 cursor-pointer text-left text-[#cbd5e1]/70"
+                >
+                  Terms of Service
                 </button>
               </li>
             </ul>
@@ -345,27 +356,33 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
           </div>
           <span className="hidden sm:inline text-[#f8c12c]/40">•</span>
           <div className="flex items-center gap-2.5 text-[#cbd5e1]/65">
-            <a
-              href="#privacy"
-              onClick={(e) => {
-                e.preventDefault();
-                alert('Empyrean 2026 Privacy Policy: We respect your privacy and protect all festival attendee registration details.');
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenPrivacyPolicy) {
+                  onOpenPrivacyPolicy();
+                } else {
+                  window.location.hash = '#privacy';
+                }
               }}
-              className="hover:text-[#f8c12c] transition-colors"
+              className="hover:text-[#f8c12c] transition-colors uppercase cursor-pointer"
             >
               PRIVACY POLICY
-            </a>
+            </button>
             <span className="text-[#f8c12c]/40">|</span>
-            <a
-              href="#terms"
-              onClick={(e) => {
-                e.preventDefault();
-                alert('Empyrean 2026 Terms of Use: Standard festival admission guidelines and event security regulations apply.');
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenTerms) {
+                  onOpenTerms();
+                } else {
+                  window.location.hash = '#terms';
+                }
               }}
-              className="hover:text-[#f8c12c] transition-colors"
+              className="hover:text-[#f8c12c] transition-colors uppercase cursor-pointer"
             >
-              TERMS OF USE
-            </a>
+              TERMS OF SERVICE
+            </button>
           </div>
         </div>
       </div>

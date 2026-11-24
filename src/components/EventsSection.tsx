@@ -131,7 +131,7 @@ export const EventsSection: React.FC<EventsSectionProps> = () => {
     <section
       ref={sectionRef}
       id="events"
-      className="relative z-20 w-full text-[#f8fafc] overflow-hidden select-none -mt-8 sm:-mt-12 md:-mt-16"
+      className="relative z-20 w-full text-[#f8fafc] overflow-hidden select-none -mt-px"
       style={{
         backgroundColor: '#071026',
         backgroundImage: `
@@ -142,6 +142,12 @@ export const EventsSection: React.FC<EventsSectionProps> = () => {
       }}
       aria-label="Events"
     >
+      {/* 0. Top Atmospheric Fog Dissolve: Seamless bridging from Trikuta mountain foothills */}
+      <div
+        className="absolute inset-x-0 top-0 h-32 pointer-events-none bg-gradient-to-b from-[#071026] via-[#071026]/80 to-transparent z-1"
+        aria-hidden="true"
+      />
+
       {/* 1. Subtle Jali Pattern Background */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.045] z-0"
@@ -152,6 +158,8 @@ export const EventsSection: React.FC<EventsSectionProps> = () => {
             linear-gradient(to bottom, rgba(248, 193, 44, 0.08) 1px, transparent 1px)
           `,
           backgroundSize: '54px 54px, 54px 54px, 54px 54px',
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 100%)',
         }}
         aria-hidden="true"
       />
@@ -168,7 +176,7 @@ export const EventsSection: React.FC<EventsSectionProps> = () => {
       />
 
       {/* Main Container */}
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 md:pt-16 pb-24 sm:pb-32 md:pb-40">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-22 md:pt-28 pb-24 sm:pb-32 md:pb-40">
         {/* Section Header */}
         <div
           className={`text-center max-w-2xl mx-auto mb-14 sm:mb-20 transition-all duration-1000 ease-out ${

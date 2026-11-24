@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, X, Film } from 'lucide-react';
+import { Play, X } from 'lucide-react';
 
 export interface GalleryPhoto {
   id: string;
@@ -12,7 +12,6 @@ export interface VideoChapter {
   title: string;
   subtitle: string;
   duration: string;
-  tag: string;
   thumbnailUrl: string;
   youtubeId?: string;
   description: string;
@@ -23,9 +22,8 @@ const VIDEO_CHAPTERS: VideoChapter[] = [
   {
     id: 'official-aftermovie',
     title: 'EMPYREAN 2025 | Official Festival Film',
-    subtitle: 'The Grand After Movie • Produced by EKCetra',
+    subtitle: 'The Grand After Movie • IIM Jammu',
     duration: '5:30',
-    tag: 'Official 4K Film',
     thumbnailUrl: 'https://i.ytimg.com/vi/WKozIOqGmio/maxresdefault.jpg',
     youtubeId: 'WKozIOqGmio',
     description:
@@ -232,24 +230,19 @@ export const CinematicGallerySection: React.FC<CinematicGallerySectionProps> = (
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/30 pointer-events-none" />
 
                   {/* Top Header Bar */}
-                  <div className="absolute top-0 inset-x-0 p-4 sm:p-5 flex items-center justify-between z-10 pointer-events-none">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#f8c12c]/30 text-[#f8c12c] text-[10px] sm:text-xs font-sub uppercase tracking-widest">
-                      <Film className="w-3 h-3 text-[#f8c12c]" />
-                      {activeChapter.tag}
-                    </span>
+                  <div className="absolute top-0 inset-x-0 p-4 sm:p-5 flex items-center justify-end z-10 pointer-events-none">
                     <span className="text-xs font-body text-[#e2d9cc]/80 bg-black/50 backdrop-blur-md px-2.5 py-0.5 rounded border border-white/10">
                       {activeChapter.duration}
                     </span>
                   </div>
 
-                  {/* Central Play Button */}
+                  {/* Central Subtle Play Button */}
                   <button
                     onClick={() => setIsPlaying(true)}
-                    className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#f8c12c] text-[#071026] flex items-center justify-center shadow-[0_0_35px_rgba(248,193,44,0.55)] transition-all duration-300 transform group-hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#f8c12c] cursor-pointer"
+                    className="relative z-10 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black/50 hover:bg-[#071026]/90 border border-white/25 hover:border-[#f8c12c]/60 text-[#f8fafc] hover:text-[#f8c12c] flex items-center justify-center backdrop-blur-md shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:scale-105 active:scale-95 cursor-pointer"
                     aria-label={`Play video: ${activeChapter.title}`}
                   >
-                    <Play className="w-7 h-7 sm:w-8 sm:h-8 fill-[#071026] ml-1" />
-                    <span className="absolute inset-0 rounded-full border border-[#f8c12c]/60 animate-ping opacity-40 pointer-events-none" />
+                    <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-current ml-0.5 text-[#fff8ed] group-hover:text-[#f8c12c] transition-colors" />
                   </button>
 
                   {/* Bottom Video Title & Caption */}

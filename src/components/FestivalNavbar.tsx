@@ -18,9 +18,6 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
   currentPage = 'home',
   onNavigate,
 }) => {
-  const [currentTheme, setCurrentTheme] = useState<'navy' | 'parchment'>(
-    currentPage === 'partners' ? 'parchment' : 'navy'
-  );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -42,54 +39,6 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [prefersReducedMotion, logoProgress, currentPage]);
-
-  // Dynamic Background Theme Detection based on scroll position:
-  // Detects whether the navbar is currently over the Navy Hero/Ribbon, Warm Parchment Artists section, or Dark Sponsors section
-  useEffect(() => {
-    if (currentPage === 'partners') {
-      setCurrentTheme('parchment');
-      return;
-    }
-
-    const handleScroll = () => {
-      const artistsSection = document.getElementById('artists');
-      const eventsSection = document.getElementById('events');
-      const gallerySection = document.getElementById('gallery');
-      const sponsorsSection = document.getElementById('sponsors');
-      const visitUsSection = document.getElementById('visit-us');
-
-      // The navbar has height ~76px.
-      // 1. If user scrolled into dark Visit Us section, switch to 'navy'
-      if (visitUsSection && visitUsSection.getBoundingClientRect().top <= 72) {
-        setCurrentTheme('navy');
-      }
-      // 2. If user scrolled into light parchment Sponsors section, switch to 'parchment'
-      else if (sponsorsSection && sponsorsSection.getBoundingClientRect().top <= 72) {
-        setCurrentTheme('parchment');
-      }
-      // 3. If user is over dark Gallery/Aftermovie section, switch to 'navy'
-      else if (gallerySection && gallerySection.getBoundingClientRect().top <= 72) {
-        setCurrentTheme('navy');
-      }
-      // 4. If user is over dark Events section, switch to 'navy'
-      else if (eventsSection && eventsSection.getBoundingClientRect().top <= 72) {
-        setCurrentTheme('navy');
-      }
-      // 3. If user is over warm parchment Artists section, switch to 'parchment'
-      else if (artistsSection && artistsSection.getBoundingClientRect().top <= 72) {
-        setCurrentTheme('parchment');
-      }
-      // 4. Otherwise default to 'navy' (Hero / Ribbon section)
-      else {
-        setCurrentTheme('navy');
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [currentPage]);
 
   // Smooth Scroll Navigation Handlers
   const handleNavigate = useCallback(
@@ -214,8 +163,8 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
   // Headings & Navbar background opacity (fades in as logo approaches top)
   const navContentOpacity = Math.max(0, Math.min(1, (logoProgress - 0.72) / 0.28));
 
-  // Theme-specific styles
-  const isParchment = currentTheme === 'parchment';
+  // Theme styles: light parchment theme throughout
+  const isParchment = true;
 
   return (
     <>
@@ -247,45 +196,29 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
           }}
         >
           {/* LEFT HEADINGS: Artists & Events */}
-          <nav className="hidden md:flex items-center gap-5 lg:gap-8">
+          <nav className="hidden md:flex items-center justify-end gap-[90px] lg:gap-[106px] flex-1">
             <button
               type="button"
               onClick={() => handleNavigate('artists')}
-              className={`group relative text-xs sm:text-sm font-sub uppercase tracking-[0.24em] transition-all cursor-pointer ${
-                isParchment
-                  ? 'text-[#1a0f05] hover:text-[#991b1b] font-bold'
-                  : 'text-[#fef3c7]/85 hover:text-[#f8c12c] font-semibold'
-              }`}
+              className="group relative text-xs sm:text-sm font-sub uppercase tracking-[0.24em] transition-all cursor-pointer text-[#1a0f05] hover:text-[#991b1b] font-bold"
             >
               <span>Artists</span>
-              <span
-                className={`absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${
-                  isParchment ? 'bg-[#991b1b]' : 'bg-[#f8c12c]'
-                }`}
-              />
+              <span className="absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full bg-[#991b1b]" />
             </button>
 
             <button
               type="button"
               onClick={() => handleNavigate('events')}
-              className={`group relative text-xs sm:text-sm font-sub uppercase tracking-[0.24em] transition-all cursor-pointer ${
-                isParchment
-                  ? 'text-[#1a0f05] hover:text-[#991b1b] font-bold'
-                  : 'text-[#fef3c7]/85 hover:text-[#f8c12c] font-semibold'
-              }`}
+              className="group relative text-xs sm:text-sm font-sub uppercase tracking-[0.24em] transition-all cursor-pointer text-[#1a0f05] hover:text-[#991b1b] font-bold"
             >
               <span>Events</span>
-              <span
-                className={`absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${
-                  isParchment ? 'bg-[#991b1b]' : 'bg-[#f8c12c]'
-                }`}
-              />
+              <span className="absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full bg-[#991b1b]" />
             </button>
           </nav>
 
           {/* CENTER DOCK SPACER: Reserve hit area for the docked logo */}
           <div
-            className="w-28 sm:w-36 md:w-44 h-8 sm:h-9 flex items-center justify-center cursor-pointer pointer-events-auto"
+            className="w-28 sm:w-36 md:w-44 h-8 sm:h-9 flex items-center justify-center cursor-pointer pointer-events-auto flex-shrink-0"
             onClick={handleHeroLogoClick}
             title="Empyrean - Return to Top"
           >
@@ -293,25 +226,21 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
           </div>
 
           {/* RIGHT 2 HEADINGS: Partners & Register */}
-          <nav className="hidden md:flex items-center gap-5 lg:gap-8">
+          <nav className="hidden md:flex items-center justify-start gap-5 lg:gap-8 flex-1">
             <button
               type="button"
               onClick={() => handleNavigate('partners')}
               className={`group relative text-xs sm:text-sm font-sub uppercase tracking-[0.24em] transition-all cursor-pointer ${
-                isParchment
-                  ? currentPage === 'partners'
-                    ? 'text-[#991b1b] font-bold'
-                    : 'text-[#1a0f05] hover:text-[#991b1b] font-bold'
-                  : currentPage === 'partners'
-                  ? 'text-[#f8c12c] font-bold'
-                  : 'text-[#fef3c7]/85 hover:text-[#f8c12c] font-semibold'
+                currentPage === 'partners'
+                  ? 'text-[#991b1b] font-bold'
+                  : 'text-[#1a0f05] hover:text-[#991b1b] font-bold'
               }`}
             >
               <span>Partners</span>
               <span
                 className={`absolute -bottom-1 left-0 h-[2px] transition-all duration-300 ${
                   currentPage === 'partners' ? 'w-full' : 'w-0 group-hover:w-full'
-                } ${isParchment ? 'bg-[#991b1b]' : 'bg-[#f8c12c]'}`}
+                } bg-[#991b1b]`}
               />
             </button>
 
@@ -319,38 +248,38 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
               href="https://forms.gle/iZxtVb1twASMDSQv7"
               target="_blank"
               rel="noopener noreferrer"
-              className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs font-sub font-bold tracking-widest uppercase transition-all duration-300 shadow-md cursor-pointer ${
-                isParchment
-                  ? 'bg-gradient-to-r from-[#991b1b] via-[#b45309] to-[#991b1b] text-[#fff8ed] hover:shadow-[0_4px_16px_rgba(153,27,27,0.35)] hover:scale-[1.03]'
-                  : 'bg-gradient-to-r from-[#d82333] via-[#b45309] to-[#f8c12c] text-[#0b1839] hover:shadow-[0_4px_18px_rgba(248,193,44,0.4)] hover:scale-[1.03]'
-              }`}
+              className="inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer -my-8 sm:-my-11 md:-my-12 -mr-3 sm:-mr-5"
+              title="Register for Empyrean"
             >
-              Register
+              <img
+                src="/register.png"
+                alt="Register"
+                className="h-[120px] sm:h-[135px] md:h-[142px] w-auto object-contain select-none filter drop-shadow-[0_4px_16px_rgba(153,27,27,0.35)]"
+                loading="eager"
+              />
             </a>
           </nav>
 
           {/* MOBILE CONTROLS (Screen < 768px): Hamburger Toggle & Quick Register */}
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex md:hidden items-center gap-1 sm:gap-2">
             <a
               href="https://forms.gle/iZxtVb1twASMDSQv7"
               target="_blank"
               rel="noopener noreferrer"
-              className={`px-3 py-1 rounded-full text-[10px] font-sub font-bold tracking-wider uppercase shadow-sm ${
-                isParchment
-                  ? 'bg-gradient-to-r from-[#991b1b] to-[#b45309] text-white'
-                  : 'bg-gradient-to-r from-[#d82333] to-[#f8c12c] text-[#0b1839]'
-              }`}
+              className="inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 -my-6 sm:-my-7 -mr-2 sm:-mr-3"
+              title="Register for Empyrean"
             >
-              Register
+              <img
+                src="/register.png"
+                alt="Register"
+                className="h-[96px] sm:h-[105px] w-auto object-contain select-none filter drop-shadow-[0_2px_10px_rgba(153,27,27,0.3)]"
+                loading="eager"
+              />
             </a>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-                isParchment
-                  ? 'text-[#1a0f05] hover:bg-[#b45309]/10'
-                  : 'text-[#fef3c7] hover:bg-white/10'
-              }`}
+              className="p-1.5 rounded-full transition-colors cursor-pointer text-[#1a0f05] hover:bg-[#b45309]/10"
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -361,24 +290,20 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
         {/* MOBILE SLIDE-DOWN DRAWER (Centered Rounded Card) */}
         {mobileMenuOpen && (
           <div
-            className={`absolute top-full mt-2 inset-x-4 max-w-sm mx-auto rounded-2xl p-5 border backdrop-blur-2xl transition-all shadow-2xl pointer-events-auto ${
-              isParchment
-                ? 'bg-[#FAF4E8]/98 border-[#b45309]/20 text-[#1a0f05]'
-                : 'bg-[#071026]/98 border-[#f8c12c]/20 text-[#fef3c7]'
-            }`}
+            className="absolute top-full mt-2 inset-x-4 max-w-sm mx-auto rounded-2xl p-5 border backdrop-blur-2xl transition-all shadow-2xl pointer-events-auto bg-[#FAF4E8]/98 border-[#b45309]/20 text-[#1a0f05]"
           >
             <div className="flex flex-col gap-3">
               <button
                 type="button"
                 onClick={() => handleNavigate('artists')}
-                className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1.5 font-semibold"
+                className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1.5 font-semibold text-[#1a0f05] hover:text-[#991b1b]"
               >
                 Artists
               </button>
               <button
                 type="button"
                 onClick={() => handleNavigate('events')}
-                className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1.5 font-semibold"
+                className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1.5 font-semibold text-[#1a0f05] hover:text-[#991b1b]"
               >
                 Events
               </button>
@@ -386,7 +311,7 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
                 type="button"
                 onClick={() => handleNavigate('partners')}
                 className={`text-left font-sub uppercase tracking-[0.2em] text-sm py-1.5 font-semibold ${
-                  currentPage === 'partners' ? 'text-[#991b1b] font-bold' : ''
+                  currentPage === 'partners' ? 'text-[#991b1b] font-bold' : 'text-[#1a0f05] hover:text-[#991b1b]'
                 }`}
               >
                 Partners
@@ -395,13 +320,14 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
                 href="https://forms.gle/iZxtVb1twASMDSQv7"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`w-full py-2.5 rounded-full text-xs font-sub font-bold tracking-widest uppercase text-center mt-2 shadow-md block ${
-                  isParchment
-                    ? 'bg-gradient-to-r from-[#991b1b] via-[#b45309] to-[#991b1b] text-[#fff8ed]'
-                    : 'bg-gradient-to-r from-[#d82333] via-[#b45309] to-[#f8c12c] text-[#0b1839]'
-                }`}
+                className="w-full flex items-center justify-center pt-2 transition-all duration-300 hover:scale-[1.02] active:scale-95"
+                title="Register for Empyrean"
               >
-                Register Now
+                <img
+                  src="/register.png"
+                  alt="Register Now"
+                  className="h-[120px] sm:h-[144px] w-auto object-contain select-none filter drop-shadow-[0_4px_16px_rgba(153,27,27,0.35)]"
+                />
               </a>
             </div>
           </div>

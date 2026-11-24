@@ -9,6 +9,7 @@ import { FestivalFooter } from './components/FestivalFooter';
 import { RegistrationModal } from './components/RegistrationModal';
 import { PartnersPage } from './components/PartnersPage';
 import { CinematicGallerySection } from './components/CinematicGallerySection';
+import { LegalModal, type LegalTab } from './components/LegalModal';
 
 export function App() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -19,6 +20,13 @@ export function App() {
     return typeof window !== 'undefined' && window.location.hash === '#partners'
       ? 'partners'
       : 'home';
+  });
+  const [legalModalTab, setLegalModalTab] = useState<LegalTab | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const hash = window.location.hash;
+    if (hash === '#privacy' || hash === '#privacy-policy') return 'privacy';
+    if (hash === '#terms' || hash === '#terms-of-service' || hash === '#terms-of-use') return 'terms';
+    return null;
   });
 
   useEffect(() => {
@@ -32,16 +40,38 @@ export function App() {
   // Listen to browser hash changes (e.g. back button, forward button, direct link)
   useEffect(() => {
     const handleHashChange = () => {
-      if (window.location.hash === '#partners') {
+      const hash = window.location.hash;
+      if (hash === '#partners') {
         setCurrentPage('partners');
         window.scrollTo(0, 0);
-      } else {
+      } else if (hash === '#privacy' || hash === '#privacy-policy') {
+        setLegalModalTab('privacy');
+      } else if (hash === '#terms' || hash === '#terms-of-service' || hash === '#terms-of-use') {
+        setLegalModalTab('terms');
+      } else if (currentPage === 'partners') {
         setCurrentPage('home');
       }
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [currentPage]);
+
+  const handleCloseLegalModal = () => {
+    setLegalModalTab(null);
+    if (
+      window.location.hash === '#privacy' ||
+      window.location.hash === '#privacy-policy' ||
+      window.location.hash === '#terms' ||
+      window.location.hash === '#terms-of-service' ||
+      window.location.hash === '#terms-of-use'
+    ) {
+      window.history.replaceState(
+        null,
+        '',
+        window.location.pathname + (currentPage === 'partners' ? '#partners' : '')
+      );
+    }
+  };
 
   const handleOpenRegistration = (tier?: string) => {
     if (tier) setSelectedTier(tier);
@@ -113,6 +143,8 @@ export function App() {
           <PartnersPage
             onBackToHome={() => handleNavigate('home')}
             onRegisterClick={handleOpenRegistration}
+            onOpenPrivacyPolicy={() => setLegalModalTab('privacy')}
+            onOpenTerms={() => setLegalModalTab('terms')}
           />
         ) : (
           /* HOME LANDING VIEW */
@@ -154,6 +186,8 @@ export function App() {
               <FestivalFooter
                 onPartnersClick={() => handleNavigate('partners')}
                 onRegisterClick={handleOpenRegistration}
+                onOpenPrivacyPolicy={() => setLegalModalTab('privacy')}
+                onOpenTerms={() => setLegalModalTab('terms')}
               />
             </>
           )}
@@ -181,6 +215,14 @@ export function App() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         defaultTier={selectedTier}
+      />
+
+      {/* 5. Legal Modal (Privacy Policy & Terms of Service) */}
+      <LegalModal
+        isOpen={legalModalTab !== null}
+        activeTab={legalModalTab || 'privacy'}
+        onClose={handleCloseLegalModal}
+        onTabChange={(tab) => setLegalModalTab(tab)}
       />
     </div>
   );

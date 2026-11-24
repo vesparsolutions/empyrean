@@ -117,10 +117,14 @@ export const PARTNERS_DATA: PartnerItem[] = [
 interface PartnersPageProps {
   onBackToHome?: () => void;
   onRegisterClick?: (tier?: string) => void;
+  onOpenPrivacyPolicy?: () => void;
+  onOpenTerms?: () => void;
 }
 
 export const PartnersPage: React.FC<PartnersPageProps> = ({
   onRegisterClick,
+  onOpenPrivacyPolicy,
+  onOpenTerms,
 }) => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -289,7 +293,11 @@ export const PartnersPage: React.FC<PartnersPageProps> = ({
         4. FESTIVAL FOOTER
         ========================================================================
       */}
-      <FestivalFooter onRegisterClick={onRegisterClick} />
+      <FestivalFooter
+        onRegisterClick={onRegisterClick}
+        onOpenPrivacyPolicy={onOpenPrivacyPolicy}
+        onOpenTerms={onOpenTerms}
+      />
     </div>
   );
 };

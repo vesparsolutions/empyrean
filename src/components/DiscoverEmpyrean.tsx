@@ -37,7 +37,7 @@ export const DiscoverEmpyrean: React.FC<DiscoverEmpyreanProps> = ({
         backgroundImage: `
           radial-gradient(circle at 50% 25%, rgba(254, 240, 199, 0.85) 0%, transparent 60%),
           radial-gradient(circle at 50% 65%, rgba(255, 237, 213, 0.65) 0%, transparent 55%),
-          linear-gradient(to bottom, #FFFDF9 0%, #FAF3E5 24%, #F4E7CE 55%, #dfc8a5 78%, #071026 100%)
+          linear-gradient(to bottom, #FFFDF9 0%, #FAF3E5 20%, #F4E7CE 40%, #e2ceaf 55%, #18233d 72%, #071026 88%, #071026 100%)
         `,
       }}
     >
@@ -218,16 +218,20 @@ export const DiscoverEmpyrean: React.FC<DiscoverEmpyreanProps> = ({
                       saturate(1.12)
                       drop-shadow(0 -10px 24px rgba(70, 25, 10, 0.18))
                     `,
+                    maskImage:
+                      'linear-gradient(to bottom, black 0%, black 58%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0.35) 86%, transparent 100%)',
+                    WebkitMaskImage:
+                      'linear-gradient(to bottom, black 0%, black 58%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0.35) 86%, transparent 100%)',
                   }}
                 />
               </picture>
 
-              {/* Atmospheric Foothill Mist: Dissolves into deep navy #071026 for seamless entry into Events */}
+              {/* Atmospheric Foothill Mist: Dissolves seamlessly into deep navy #071026 */}
               <div
-                className="absolute inset-x-0 bottom-0 h-[48%] pointer-events-none"
+                className="absolute inset-x-0 -bottom-1 h-[65%] pointer-events-none"
                 style={{
                   background:
-                    'linear-gradient(to bottom, transparent 0%, rgba(15, 23, 42, 0.25) 25%, rgba(11, 24, 57, 0.70) 60%, #071026 100%)',
+                    'linear-gradient(to bottom, transparent 0%, rgba(7, 16, 38, 0.12) 20%, rgba(7, 16, 38, 0.55) 48%, rgba(7, 16, 38, 0.90) 72%, #071026 88%, #071026 100%)',
                 }}
                 aria-hidden="true"
               />

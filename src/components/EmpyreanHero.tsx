@@ -350,7 +350,7 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
               Reference: wide decorative hanging arch with bells, spans ~52% of top
           ═══════════════════════════════════════════════════════════════ */}
           <div
-            className="absolute top-0 left-1/2 z-[8] pointer-events-none"
+            className="absolute -top-[1.5%] left-1/2 z-[8] pointer-events-none"
             style={{
               width: '52%',
               maxWidth: '820px',
