@@ -48,7 +48,7 @@ export function App() {
 
   const handleOpenRegistration = (tier?: string) => {
     if (tier) setSelectedTier(tier);
-    setModalOpen(true);
+    window.open('https://forms.gle/iZxtVb1twASMDSQv7', '_blank', 'noopener,noreferrer');
   };
 
   const handleScrollToRibbon = () => {

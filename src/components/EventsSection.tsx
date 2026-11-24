@@ -131,7 +131,7 @@ export const EventsSection: React.FC<EventsSectionProps> = () => {
     <section
       ref={sectionRef}
       id="events"
-      className="relative w-full text-[#f8fafc] overflow-hidden select-none"
+      className="relative z-20 w-full text-[#f8fafc] overflow-hidden select-none -mt-8 sm:-mt-12 md:-mt-16"
       style={{
         backgroundColor: '#071026',
         backgroundImage: `
@@ -168,10 +168,10 @@ export const EventsSection: React.FC<EventsSectionProps> = () => {
       />
 
       {/* Main Container */}
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 md:pt-36 pb-28 sm:pb-36 md:pb-44">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 md:pt-16 pb-24 sm:pb-32 md:pb-40">
         {/* Section Header */}
         <div
-          className={`text-center max-w-2xl mx-auto mb-16 sm:mb-24 transition-all duration-1000 ease-out ${
+          className={`text-center max-w-2xl mx-auto mb-14 sm:mb-20 transition-all duration-1000 ease-out ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
@@ -181,9 +181,25 @@ export const EventsSection: React.FC<EventsSectionProps> = () => {
           <h2 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-[#fff6e0] drop-shadow-[0_4px_30px_rgba(248,193,44,0.25)] mb-4">
             Events
           </h2>
-          <p className="font-editorial italic text-lg sm:text-xl md:text-2xl text-[#f8c12c]/75 max-w-lg mx-auto leading-relaxed">
-            Three days across Cultural, Sports & Management
-          </p>
+          <div className="relative inline-block mt-1">
+            <p className="font-editorial italic text-lg sm:text-xl md:text-2xl text-[#f8c12c]/75 max-w-lg mx-auto leading-relaxed">
+              Three days across Cultural, Sports & Management
+            </p>
+
+            {/* Red "COMING SOON" Ink Stamp */}
+            <div
+              className="absolute -top-3.5 -right-3 sm:-right-6 md:-right-8 -rotate-12 pointer-events-none select-none z-10"
+              style={{
+                filter: 'drop-shadow(0 2px 10px rgba(220, 38, 38, 0.55))',
+              }}
+            >
+              <div className="border-[2px] sm:border-[2.5px] border-dashed border-[#ef4444] bg-[#dc2626]/20 backdrop-blur-[2px] px-2.5 sm:px-3 py-0.5 rounded-sm flex items-center justify-center">
+                <span className="font-mono text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#fca5a5] drop-shadow-[0_0_8px_rgba(239,68,68,0.85)]">
+                  COMING SOON
+                </span>
+              </div>
+            </div>
+          </div>
           {/* Subtle Warm Divider */}
           <div
             className="w-20 h-px bg-gradient-to-r from-transparent via-[#f8c12c]/40 to-transparent mx-auto mt-6"

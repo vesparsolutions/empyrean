@@ -221,28 +221,33 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
     <>
       {/* 
         ========================================================================
-        1. FIXED TOP NAVBAR BAR
-        Always on top of the viewport. Background & text dynamically shift
+        1. FLOATING ROUNDED-PILL TOP NAVBAR
+        Docked at top-center. Rounded edges with dynamic theme switching
         between Deep Navy and Warm Parchment to match the underlying section.
+        Fades and scales in smoothly as the central logo docks at the top.
         ========================================================================
       */}
       <header
         id="festival-fixed-navbar"
-        className={`fixed top-0 left-0 right-0 z-50 h-16 sm:h-20 transition-all duration-500 select-none ${
-          navContentOpacity > 0.02
-            ? isParchment
-              ? 'bg-[#FAF4E8]/88 backdrop-blur-md border-b border-[#b45309]/20 shadow-[0_4px_24px_rgba(90,40,10,0.08)]'
-              : 'bg-[#071026]/75 backdrop-blur-md border-b border-[#f8c12c]/15 shadow-[0_8px_32px_rgba(2,6,18,0.45)]'
-            : 'bg-transparent border-b border-transparent pointer-events-none'
-        }`}
+        className="fixed top-3 sm:top-4 inset-x-0 z-50 flex justify-center pointer-events-none select-none px-3 sm:px-4"
         style={{
           opacity: navContentOpacity > 0.02 ? 1 : 0,
           pointerEvents: isDocked ? 'auto' : 'none',
         }}
       >
-        <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div
+          className={`relative pointer-events-auto rounded-full px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 flex items-center justify-between gap-3 sm:gap-6 md:gap-10 transition-all duration-500 shadow-2xl backdrop-blur-xl ${
+            isParchment
+              ? 'bg-[#FAF4E8]/92 border border-[#b45309]/25 shadow-[0_8px_32px_rgba(90,40,10,0.12)] text-[#1a0f05]'
+              : 'bg-[#071026]/85 border border-[#f8c12c]/20 shadow-[0_8px_32px_rgba(2,6,18,0.55)] text-[#fef3c7]'
+          }`}
+          style={{
+            transform: `scale(${0.92 + navContentOpacity * 0.08})`,
+            transition: 'opacity 0.4s ease, transform 0.4s ease, background-color 0.5s ease, border-color 0.5s ease',
+          }}
+        >
           {/* LEFT HEADINGS: Artists & Events */}
-          <nav className="flex-1 hidden md:flex items-center justify-end gap-6 lg:gap-10 pr-6 lg:pr-10">
+          <nav className="hidden md:flex items-center gap-5 lg:gap-8">
             <button
               type="button"
               onClick={() => handleNavigate('artists')}
@@ -280,7 +285,7 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
 
           {/* CENTER DOCK SPACER: Reserve hit area for the docked logo */}
           <div
-            className="w-36 sm:w-44 md:w-56 h-full flex items-center justify-center cursor-pointer pointer-events-auto"
+            className="w-28 sm:w-36 md:w-44 h-8 sm:h-9 flex items-center justify-center cursor-pointer pointer-events-auto"
             onClick={handleHeroLogoClick}
             title="Empyrean - Return to Top"
           >
@@ -288,7 +293,7 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
           </div>
 
           {/* RIGHT 2 HEADINGS: Partners & Register */}
-          <nav className="flex-1 hidden md:flex items-center justify-start gap-6 lg:gap-10 pl-6 lg:pr-10">
+          <nav className="hidden md:flex items-center gap-5 lg:gap-8">
             <button
               type="button"
               onClick={() => handleNavigate('partners')}
@@ -310,80 +315,94 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
               />
             </button>
 
-            <button
-              type="button"
-              onClick={() => handleNavigate('register')}
-              className={`px-5 py-2 rounded-full text-xs font-sub font-bold tracking-widest uppercase transition-all duration-300 shadow-md cursor-pointer ${
+            <a
+              href="https://forms.gle/iZxtVb1twASMDSQv7"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs font-sub font-bold tracking-widest uppercase transition-all duration-300 shadow-md cursor-pointer ${
                 isParchment
                   ? 'bg-gradient-to-r from-[#991b1b] via-[#b45309] to-[#991b1b] text-[#fff8ed] hover:shadow-[0_4px_16px_rgba(153,27,27,0.35)] hover:scale-[1.03]'
                   : 'bg-gradient-to-r from-[#d82333] via-[#b45309] to-[#f8c12c] text-[#0b1839] hover:shadow-[0_4px_18px_rgba(248,193,44,0.4)] hover:scale-[1.03]'
               }`}
             >
               Register
-            </button>
+            </a>
           </nav>
 
-          {/* MOBILE CONTROLS (Screen < 768px): Hamburger Toggle */}
-          <div className="flex md:hidden items-center gap-3">
+          {/* MOBILE CONTROLS (Screen < 768px): Hamburger Toggle & Quick Register */}
+          <div className="flex md:hidden items-center gap-2">
+            <a
+              href="https://forms.gle/iZxtVb1twASMDSQv7"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`px-3 py-1 rounded-full text-[10px] font-sub font-bold tracking-wider uppercase shadow-sm ${
+                isParchment
+                  ? 'bg-gradient-to-r from-[#991b1b] to-[#b45309] text-white'
+                  : 'bg-gradient-to-r from-[#d82333] to-[#f8c12c] text-[#0b1839]'
+              }`}
+            >
+              Register
+            </a>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-2 rounded-lg transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
                 isParchment
                   ? 'text-[#1a0f05] hover:bg-[#b45309]/10'
                   : 'text-[#fef3c7] hover:bg-white/10'
               }`}
               aria-label="Toggle Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
-        {/* MOBILE SLIDE-DOWN DRAWER */}
+        {/* MOBILE SLIDE-DOWN DRAWER (Centered Rounded Card) */}
         {mobileMenuOpen && (
           <div
-            className={`md:hidden px-6 py-5 border-b backdrop-blur-xl transition-all shadow-xl ${
+            className={`absolute top-full mt-2 inset-x-4 max-w-sm mx-auto rounded-2xl p-5 border backdrop-blur-2xl transition-all shadow-2xl pointer-events-auto ${
               isParchment
                 ? 'bg-[#FAF4E8]/98 border-[#b45309]/20 text-[#1a0f05]'
                 : 'bg-[#071026]/98 border-[#f8c12c]/20 text-[#fef3c7]'
             }`}
           >
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <button
                 type="button"
                 onClick={() => handleNavigate('artists')}
-                className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1 font-semibold"
+                className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1.5 font-semibold"
               >
                 Artists
               </button>
               <button
                 type="button"
                 onClick={() => handleNavigate('events')}
-                className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1 font-semibold"
+                className="text-left font-sub uppercase tracking-[0.2em] text-sm py-1.5 font-semibold"
               >
                 Events
               </button>
               <button
                 type="button"
                 onClick={() => handleNavigate('partners')}
-                className={`text-left font-sub uppercase tracking-[0.2em] text-sm py-1 font-semibold ${
+                className={`text-left font-sub uppercase tracking-[0.2em] text-sm py-1.5 font-semibold ${
                   currentPage === 'partners' ? 'text-[#991b1b] font-bold' : ''
                 }`}
               >
                 Partners
               </button>
-              <button
-                type="button"
-                onClick={() => handleNavigate('register')}
-                className={`w-full py-2.5 rounded-full text-xs font-sub font-bold tracking-widest uppercase text-center mt-2 shadow-md ${
+              <a
+                href="https://forms.gle/iZxtVb1twASMDSQv7"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`w-full py-2.5 rounded-full text-xs font-sub font-bold tracking-widest uppercase text-center mt-2 shadow-md block ${
                   isParchment
                     ? 'bg-gradient-to-r from-[#991b1b] via-[#b45309] to-[#991b1b] text-[#fff8ed]'
                     : 'bg-gradient-to-r from-[#d82333] via-[#b45309] to-[#f8c12c] text-[#0b1839]'
                 }`}
               >
                 Register Now
-              </button>
+              </a>
             </div>
           </div>
         )}

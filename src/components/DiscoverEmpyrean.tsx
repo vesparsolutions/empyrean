@@ -31,7 +31,7 @@ export const DiscoverEmpyrean: React.FC<DiscoverEmpyreanProps> = ({
   return (
     <section
       id="artists"
-      className="relative z-30 min-h-screen w-full flex flex-col items-center overflow-visible pt-12 sm:pt-16 md:pt-20 select-none"
+      className={`relative z-30 ${SHOW_SIGILS ? 'min-h-screen' : 'min-h-0'} w-full flex flex-col items-center overflow-visible pt-12 sm:pt-16 md:pt-20 select-none`}
       style={{
         backgroundColor: '#FAF4E8',
         backgroundImage: `
