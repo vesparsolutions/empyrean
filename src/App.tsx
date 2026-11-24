@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { FestPreloader } from './components/FestPreloader';
 import { FestivalNavbar } from './components/FestivalNavbar';
 import { EmpyreanHero } from './components/EmpyreanHero';
 import { DiscoverEmpyrean } from './components/DiscoverEmpyrean';
@@ -12,8 +11,6 @@ import { PartnersPage } from './components/PartnersPage';
 import { CinematicGallerySection } from './components/CinematicGallerySection';
 
 export function App() {
-  const [isAssetsLoaded, setIsAssetsLoaded] = useState(false);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string>('Gold All-Access Pass');
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -99,45 +96,33 @@ export function App() {
         currentPage === 'partners' ? 'bg-[#FAF5EB]' : 'bg-[#0b1839]'
       } text-[#f8fafc] font-body selection:bg-[#f8c12c] selection:text-[#0b1839]`}
     >
-      {/* 1. Global Luxury Preloader: Gated until Supabase bucket images are completely loaded */}
-      {!isAssetsLoaded && (
-        <FestPreloader
-          onLoaded={(urls) => {
-            setImageUrls(urls);
-            setIsAssetsLoaded(true);
-          }}
+      {/* Main Experience: Direct Instant Load with No Preloader Screen */}
+      <main id="main-content" className="relative w-full">
+        {/* Persistent Festival Navbar: Central Logo docks at top + 2-2 headings on each side */}
+        <FestivalNavbar
+          progress={heroProgress}
+          prefersReducedMotion={prefersReducedMotion}
+          onExploreClick={handleScrollToRibbon}
+          onRegisterClick={handleOpenRegistration}
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
         />
-      )}
 
-      {/* 2. Main Experience (Only loaded once Supabase images are ready) */}
-      {isAssetsLoaded && (
-        <main id="main-content" className="relative w-full">
-          {/* Persistent Festival Navbar: Central Logo docks at top + 2-2 headings on each side */}
-          <FestivalNavbar
-            progress={heroProgress}
-            prefersReducedMotion={prefersReducedMotion}
-            onExploreClick={handleScrollToRibbon}
+        {/* DEDICATED PARTNERS PAGE VIEW */}
+        {currentPage === 'partners' ? (
+          <PartnersPage
+            onBackToHome={() => handleNavigate('home')}
             onRegisterClick={handleOpenRegistration}
-            currentPage={currentPage}
-            onNavigate={handleNavigate}
           />
-
-          {/* DEDICATED PARTNERS PAGE VIEW */}
-          {currentPage === 'partners' ? (
-            <PartnersPage
-              onBackToHome={() => handleNavigate('home')}
-              onRegisterClick={handleOpenRegistration}
+        ) : (
+          /* HOME LANDING VIEW */
+          <>
+            {/* Section 1: Grand Hero with Scroll-Driven Transition */}
+            <EmpyreanHero
+              onProgressChange={setHeroProgress}
+              onExploreClick={handleScrollToRibbon}
+              prefersReducedMotion={prefersReducedMotion}
             />
-          ) : (
-            /* HOME LANDING VIEW */
-            <>
-              {/* Section 1: Grand Hero with Scroll-Driven Transition */}
-              <EmpyreanHero
-                onProgressChange={setHeroProgress}
-                onExploreClick={handleScrollToRibbon}
-                prefersReducedMotion={prefersReducedMotion}
-                imageUrls={imageUrls}
-              />
 
               {/* Section 2: Complete Cinematic Video + Dual-Row Infinite Photo Gallery (Moments & Reveries) */}
               <CinematicGallerySection
@@ -173,7 +158,6 @@ export function App() {
             </>
           )}
         </main>
-      )}
 
       {/* 4. Global Fixed Screen Border: Present in hero entrance, fades out on first scroll */}
       <div
