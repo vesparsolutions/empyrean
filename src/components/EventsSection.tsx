@@ -181,25 +181,9 @@ export const EventsSection: React.FC<EventsSectionProps> = () => {
           <h2 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-[#fff6e0] drop-shadow-[0_4px_30px_rgba(248,193,44,0.25)] mb-4">
             Events
           </h2>
-          <div className="relative inline-block mt-1">
-            <p className="font-editorial italic text-lg sm:text-xl md:text-2xl text-[#f8c12c]/75 max-w-lg mx-auto leading-relaxed">
-              Three days across Cultural, Sports & Management
-            </p>
-
-            {/* Red "COMING SOON" Ink Stamp */}
-            <div
-              className="absolute -top-3.5 -right-3 sm:-right-6 md:-right-8 -rotate-12 pointer-events-none select-none z-10"
-              style={{
-                filter: 'drop-shadow(0 2px 10px rgba(220, 38, 38, 0.55))',
-              }}
-            >
-              <div className="border-[2px] sm:border-[2.5px] border-dashed border-[#ef4444] bg-[#dc2626]/20 backdrop-blur-[2px] px-2.5 sm:px-3 py-0.5 rounded-sm flex items-center justify-center">
-                <span className="font-mono text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-[#fca5a5] drop-shadow-[0_0_8px_rgba(239,68,68,0.85)]">
-                  COMING SOON
-                </span>
-              </div>
-            </div>
-          </div>
+          <p className="font-editorial italic text-lg sm:text-xl md:text-2xl text-[#f8c12c]/75 max-w-lg mx-auto leading-relaxed mt-1">
+            Three days across Cultural, Sports & Management
+          </p>
           {/* Subtle Warm Divider */}
           <div
             className="w-20 h-px bg-gradient-to-r from-transparent via-[#f8c12c]/40 to-transparent mx-auto mt-6"

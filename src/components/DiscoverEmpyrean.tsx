@@ -177,10 +177,26 @@ export const DiscoverEmpyrean: React.FC<DiscoverEmpyreanProps> = ({
             Layered at z-10 behind the foreground peaks (z-20)
           */}
           <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center select-none pt-4 sm:pt-6 pb-8 sm:pb-12 md:pb-16">
-            {/* Main Majestic Line Building Anticipation in Cinzel serif */}
-            <h3 className="font-display font-medium text-2xl sm:text-3xl md:text-4xl lg:text-[42px] text-[#1a0f05] tracking-wide leading-snug max-w-2xl drop-shadow-[0_2px_16px_rgba(140,82,20,0.16)]">
-              Behind the silence of the peaks, the legends gather.
-            </h3>
+            <div className="relative inline-block">
+              {/* Main Majestic Line Building Anticipation in Cinzel serif */}
+              <h3 className="font-display font-medium text-2xl sm:text-3xl md:text-4xl lg:text-[42px] text-[#1a0f05] tracking-wide leading-snug max-w-2xl drop-shadow-[0_2px_16px_rgba(140,82,20,0.16)]">
+                Behind the silence of the peaks, the legends gather.
+              </h3>
+
+              {/* Red Inked "COMING SOON" Stamp Stamped Over The Line */}
+              <div
+                className="absolute -top-3.5 sm:-top-5 -right-2 sm:-right-6 md:-right-8 -rotate-[10deg] pointer-events-none select-none z-20"
+                style={{
+                  filter: 'drop-shadow(0 3px 12px rgba(185, 28, 28, 0.4))',
+                }}
+              >
+                <div className="border-[2px] sm:border-[2.5px] border-dashed border-[#b91c1c] bg-[#dc2626]/12 backdrop-blur-[1px] px-3 sm:px-4 py-0.5 sm:py-1 rounded-sm flex items-center justify-center">
+                  <span className="font-mono text-[11px] sm:text-xs md:text-sm font-black uppercase tracking-[0.28em] text-[#991b1b] drop-shadow-[0_0_6px_rgba(220,38,38,0.35)]">
+                    COMING SOON
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* 
