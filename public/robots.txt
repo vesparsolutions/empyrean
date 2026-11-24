@@ -1,0 +1,20 @@
+# Robots.txt for Empyrean - Annual Fest of IIM Jammu
+# Primary Domain: https://empyreanfest.com
+
+User-agent: *
+Allow: /
+Allow: /og-image.png
+Allow: /assets/
+Allow: /sponsors/
+Allow: /hero/
+Allow: /past/
+
+# Search Engine Specific Allowances
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Sitemap Index
+Sitemap: https://empyreanfest.com/sitemap.xml

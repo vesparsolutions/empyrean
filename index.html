@@ -1,19 +1,165 @@
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<html lang="en-IN" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/assets/empyrean/iim-jammu-emblem.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EMPYREAN | An Era Reimagined — Annual Fest of IIM Jammu</title>
-    <meta name="description" content="Experience Empyrean, the annual fest of IIM Jammu. An era reimagined where culture gets a new dimension through pronites, cultural showcases, management conclaves, and competitions." />
+    <title>Empyrean | Annual Fest of IIM Jammu</title>
+    
+    <!-- Primary SEO Meta Tags -->
+    <meta name="title" content="Empyrean | Annual Fest of IIM Jammu" />
+    <meta
+      name="description"
+      content="Experience Empyrean, the annual fest of the Indian Institute of Management Jammu. Explore events, competitions, activities, registrations and everything happening at IIM Jammu's annual celebration."
+    />
+    <meta
+      name="keywords"
+      content="Empyrean, Empyrean IIM Jammu, Empyrean Fest, IIM Jammu Fest, Annual Fest of IIM Jammu, IIM Jammu Events, Empyrean Registration, Empyrean Competitions, IIM Jammu Cultural Fest, IIM Jammu Management Fest"
+    />
+    <meta name="author" content="Indian Institute of Management Jammu, Vespar Solutions" />
+    <meta name="application-name" content="Empyrean" />
+    <meta name="generator" content="Vite, React" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    <meta name="theme-color" content="#071026" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://empyreanfest.com/" />
+
+    <!-- Search Engine Crawlers & Indexing Directives -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:site_name" content="Empyrean" />
+    <meta property="og:url" content="https://empyreanfest.com/" />
+    <meta property="og:title" content="Empyrean | Annual Fest of IIM Jammu" />
+    <meta
+      property="og:description"
+      content="Experience Empyrean, the annual fest of the Indian Institute of Management Jammu. Explore events, competitions, activities, registrations and everything happening at IIM Jammu's annual celebration."
+    />
+    <meta property="og:image" content="https://empyreanfest.com/og-image.png" />
+    <meta property="og:image:secure_url" content="https://empyreanfest.com/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Empyrean - Annual Fest of IIM Jammu" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://empyreanfest.com/" />
+    <meta name="twitter:title" content="Empyrean | Annual Fest of IIM Jammu" />
+    <meta
+      name="twitter:description"
+      content="Experience Empyrean, the annual fest of the Indian Institute of Management Jammu. Explore events, competitions, activities, registrations and everything happening at IIM Jammu's annual celebration."
+    />
+    <meta name="twitter:image" content="https://empyreanfest.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Empyrean - Annual Fest of IIM Jammu" />
+
+    <!-- Favicons & App Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Marcellus&family=Outfit:wght@300;400;500;600;700;800&family=Rozha+One&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Marcellus&family=Outfit:wght@300;400;500;600;700;800&family=Rozha+One&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Schema.org Structured Data: WebSite -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": "https://empyreanfest.com/#website",
+        "url": "https://empyreanfest.com/",
+        "name": "Empyrean",
+        "alternateName": ["Empyrean IIM Jammu", "Empyrean Fest", "Annual Fest of IIM Jammu"],
+        "description": "Experience Empyrean, the annual fest of the Indian Institute of Management Jammu. Explore events, competitions, activities, registrations and everything happening at IIM Jammu's annual celebration.",
+        "inLanguage": "en-IN",
+        "publisher": {
+          "@id": "https://www.iimj.ac.in/#organization"
+        }
+      }
+    </script>
+
+    <!-- Schema.org Structured Data: Festival / Event -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Festival",
+        "@id": "https://empyreanfest.com/#event",
+        "name": "Empyrean 2026 - Annual Fest of IIM Jammu",
+        "alternateName": "Empyrean IIM Jammu",
+        "description": "Experience Empyrean, the annual fest of the Indian Institute of Management Jammu. Explore events, competitions, activities, registrations and everything happening at IIM Jammu's annual celebration.",
+        "url": "https://empyreanfest.com/",
+        "image": "https://empyreanfest.com/og-image.png",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "eventStatus": "https://schema.org/EventScheduled",
+        "location": {
+          "@type": "Place",
+          "name": "Indian Institute of Management Jammu (IIM Jammu), Jagti Campus",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Jagti",
+            "addressLocality": "Jammu",
+            "addressRegion": "Jammu & Kashmir",
+            "postalCode": "181221",
+            "addressCountry": "IN"
+          }
+        },
+        "organizer": {
+          "@id": "https://www.iimj.ac.in/#organization"
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": "https://forms.gle/iZxtVb1twASMDSQv7",
+          "availability": "https://schema.org/InStock",
+          "description": "Online registration for Empyrean 2026 events and competitions"
+        }
+      }
+    </script>
+
+    <!-- Schema.org Structured Data: Educational Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "@id": "https://www.iimj.ac.in/#organization",
+        "name": "Indian Institute of Management Jammu",
+        "alternateName": "IIM Jammu",
+        "url": "https://www.iimj.ac.in",
+        "logo": "https://empyreanfest.com/assets/empyrean/iim-jammu-emblem.png",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Jagti",
+          "addressLocality": "Jammu",
+          "addressRegion": "Jammu & Kashmir",
+          "postalCode": "181221",
+          "addressCountry": "IN"
+        },
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "empyrean@iimj.ac.in",
+          "contactType": "Fest Organizing Committee"
+        },
+        "sameAs": [
+          "https://www.iimj.ac.in",
+          "https://www.instagram.com/empyrean_iimj/",
+          "https://www.linkedin.com/school/iimjammu/"
+        ]
+      }
+    </script>
   </head>
   <body class="bg-[#0b1839] text-[#f8fafc] overflow-x-clip antialiased selection:bg-[#f5a623] selection:text-[#0b1839]">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

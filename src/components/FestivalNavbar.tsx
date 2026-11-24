@@ -195,6 +195,9 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
             transition: 'opacity 0.4s ease, transform 0.4s ease, background-color 0.5s ease, border-color 0.5s ease',
           }}
         >
+          {/* MOBILE LEFT SPACER: Balances the right-side hamburger button on small screens */}
+          <div className="w-8 h-8 md:hidden pointer-events-none" aria-hidden="true" />
+
           {/* LEFT HEADINGS: Artists & Events */}
           <nav className="hidden md:flex items-center justify-end gap-[90px] lg:gap-[106px] flex-1">
             <button
@@ -225,7 +228,7 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
             {/* Hit area for clicking the docked logo */}
           </div>
 
-          {/* RIGHT 2 HEADINGS: Partners & Register */}
+          {/* RIGHT 2 HEADINGS: Partners & Register (Desktop) */}
           <nav className="hidden md:flex items-center justify-start gap-5 lg:gap-8 flex-1">
             <button
               type="button"
@@ -260,29 +263,15 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
             </a>
           </nav>
 
-          {/* MOBILE CONTROLS (Screen < 768px): Hamburger Toggle & Quick Register */}
-          <div className="flex md:hidden items-center gap-1 sm:gap-2">
-            <a
-              href="https://forms.gle/iZxtVb1twASMDSQv7"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 -my-6 sm:-my-7 -mr-2 sm:-mr-3"
-              title="Register for Empyrean"
-            >
-              <img
-                src="/register.png"
-                alt="Register"
-                className="h-[96px] sm:h-[105px] w-auto object-contain select-none filter drop-shadow-[0_2px_10px_rgba(153,27,27,0.3)]"
-                loading="eager"
-              />
-            </a>
+          {/* MOBILE MENU TOGGLE (Screen < 768px) */}
+          <div className="flex md:hidden items-center justify-end w-8">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-1.5 rounded-full transition-colors cursor-pointer text-[#1a0f05] hover:bg-[#b45309]/10"
               aria-label="Toggle Menu"
             >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -378,6 +367,49 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 
+        ========================================================================
+        3. MOBILE FLOATING REGISTER BUTTON (Screen < 768px)
+        Fixed in the bottom-right corner (0.7x scale, shifted 10% right, with ambient glow).
+        ========================================================================
+      */}
+      <aside
+        id="mobile-floating-register"
+        aria-label="Register for Empyrean"
+        className="fixed bottom-3 sm:bottom-5 z-40 md:hidden pointer-events-auto select-none"
+        style={{
+          right: 'calc(-5% + 0.25rem + env(safe-area-inset-right, 0px))',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}
+      >
+        <a
+          href="https://forms.gle/iZxtVb1twASMDSQv7"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative block transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer focus:outline-none"
+          title="Register for Empyrean"
+          onClick={(e) => {
+            if (onRegisterClick) {
+              e.preventDefault();
+              onRegisterClick();
+            }
+          }}
+        >
+          {/* Ambient Background Aura Glow */}
+          <div
+            className="absolute inset-x-2 inset-y-2 bg-gradient-to-r from-[#f8c12c]/45 via-[#f59e0b]/35 to-[#e11d48]/40 rounded-full blur-lg pointer-events-none scale-105 opacity-90 transition-opacity duration-300 group-hover:opacity-100"
+            aria-hidden="true"
+          />
+
+          <img
+            src="/register.png"
+            alt="Register for Empyrean"
+            className="relative h-[92px] sm:h-[105px] w-auto object-contain select-none filter drop-shadow-[0_0_14px_rgba(248,193,44,0.55)] drop-shadow-[0_0_28px_rgba(245,158,11,0.35)] drop-shadow-[0_6px_20px_rgba(0,0,0,0.65)] transition-transform duration-300"
+            loading="eager"
+          />
+        </a>
+      </aside>
     </>
   );
 };
