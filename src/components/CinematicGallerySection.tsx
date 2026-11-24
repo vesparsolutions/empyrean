@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Play,
-  ChevronLeft,
-  ChevronRight,
   Maximize2,
   X,
   Sparkles,
@@ -35,10 +33,10 @@ export interface VideoChapter {
 const SUPABASE_BUCKET_BASE_URL =
   'https://omgweuvobdpbotwteqxw.supabase.co/storage/v1/object/public/Memory';
 
-// Curated Video Chapters (featuring official Empyrean 2025 After Movie)
+// Curated Video (featuring official Empyrean 2025 After Movie)
 const VIDEO_CHAPTERS: VideoChapter[] = [
   {
-    id: 'chapter-1',
+    id: 'official-aftermovie',
     title: 'EMPYREAN 2025 | Official Festival Film',
     subtitle: 'The Grand After Movie • Produced by EKCetra',
     duration: '5:30',
@@ -47,39 +45,6 @@ const VIDEO_CHAPTERS: VideoChapter[] = [
     youtubeId: 'WKozIOqGmio',
     description:
       'Relive the thunderous beats, electric stages, and unforgettable nights at IIM Jammu Jagti campus.',
-  },
-  {
-    id: 'chapter-2',
-    title: 'Star Night Euphoria — Pronites Live',
-    subtitle: 'Celebrity Concerts & Ocean of Crowd',
-    duration: '4:12',
-    tag: 'Live Stage',
-    thumbnailUrl: `${SUPABASE_BUCKET_BASE_URL}/${encodeURIComponent('Screenshot 2026-11-08 at 13.52.47.png')}`,
-    youtubeId: 'WKozIOqGmio',
-    description:
-      'Headliners setting the stage ablaze under the starry Himalayan skies with thousands singing in unison.',
-  },
-  {
-    id: 'chapter-3',
-    title: 'Cultural Odyssey & Kashmiri Folk',
-    subtitle: 'Traditional Rhythms & Classical Melodies',
-    duration: '3:45',
-    tag: 'Heritage',
-    thumbnailUrl: `${SUPABASE_BUCKET_BASE_URL}/${encodeURIComponent('Screenshot 2026-11-09 at 11.51.32.png')}`,
-    youtubeId: 'WKozIOqGmio',
-    description:
-      'The cultural soul of Jammu and Kashmir brought to life through intricate choreography and live instruments.',
-  },
-  {
-    id: 'chapter-4',
-    title: 'EDM Surge & Laser Mapping',
-    subtitle: 'Midnight Basslines & Visual Spectacle',
-    duration: '4:50',
-    tag: 'Electronic',
-    thumbnailUrl: `${SUPABASE_BUCKET_BASE_URL}/${encodeURIComponent('Screenshot 2026-11-09 at 11.51.11.png')}`,
-    youtubeId: 'WKozIOqGmio',
-    description:
-      'Pulsing lights, neon fog, and high-octane electronic drops reverberating across the festival grounds.',
   },
 ];
 
@@ -358,9 +323,8 @@ export const CinematicGallerySection: React.FC<CinematicGallerySectionProps> = (
   onRegisterClick,
 }) => {
   // Video player states
-  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const activeChapter = VIDEO_CHAPTERS[activeChapterIndex];
+  const activeChapter = VIDEO_CHAPTERS[0];
 
   // Photo data states
   const [upperPhotos, setUpperPhotos] = useState<GalleryPhoto[]>(INITIAL_UPPER_PHOTOS);
@@ -466,21 +430,6 @@ export const CinematicGallerySection: React.FC<CinematicGallerySectionProps> = (
       window.removeEventListener('resize', calculateDurations);
     };
   }, [calculateDurations, upperPhotos, lowerPhotos]);
-
-  // Handle Video Chapter Navigation
-  const handlePrevChapter = () => {
-    setIsPlaying(false);
-    setActiveChapterIndex((prev) =>
-      prev === 0 ? VIDEO_CHAPTERS.length - 1 : prev - 1
-    );
-  };
-
-  const handleNextChapter = () => {
-    setIsPlaying(false);
-    setActiveChapterIndex((prev) =>
-      prev === VIDEO_CHAPTERS.length - 1 ? 0 : prev + 1
-    );
-  };
 
   // Close lightbox on Escape key
   useEffect(() => {
@@ -623,29 +572,6 @@ export const CinematicGallerySection: React.FC<CinematicGallerySectionProps> = (
                     <span className="absolute inset-0 rounded-full border border-[#f8c12c]/60 animate-ping opacity-40 pointer-events-none" />
                   </button>
 
-                  {/* Left & Right Chapter Switcher Chevrons */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePrevChapter();
-                    }}
-                    className="absolute left-3 sm:left-4 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/90 text-white/90 border border-white/15 backdrop-blur-md flex items-center justify-center transition-colors focus:outline-none focus:ring-1 focus:ring-[#f8c12c]"
-                    aria-label="Previous video chapter"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNextChapter();
-                    }}
-                    className="absolute right-3 sm:right-4 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/90 text-white/90 border border-white/15 backdrop-blur-md flex items-center justify-center transition-colors focus:outline-none focus:ring-1 focus:ring-[#f8c12c]"
-                    aria-label="Next video chapter"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-
                   {/* Bottom Video Title & Caption */}
                   <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 z-10 flex flex-col pointer-events-none">
                     <h4 className="font-editorial text-lg sm:text-xl md:text-2xl text-[#f8fafc] font-normal drop-shadow-md line-clamp-1">
@@ -658,39 +584,10 @@ export const CinematicGallerySection: React.FC<CinematicGallerySectionProps> = (
                 </div>
               )}
             </div>
-
-            {/* Video Chapter Carousel Indicators */}
-            <div className="flex items-center justify-between mt-3 px-1 text-xs text-[#94a3b8]">
-              <span className="font-sub text-[11px] uppercase tracking-wider text-[#e2d9cc]/70">
-                Chapter {activeChapterIndex + 1} of {VIDEO_CHAPTERS.length}
-              </span>
-              <div className="flex items-center gap-1.5">
-                {VIDEO_CHAPTERS.map((ch, idx) => (
-                  <button
-                    key={ch.id}
-                    onClick={() => {
-                      setIsPlaying(false);
-                      setActiveChapterIndex(idx);
-                    }}
-                    aria-label={`Switch to ${ch.title}`}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      idx === activeChapterIndex
-                        ? 'w-6 bg-[#f8c12c]': 'w-2 bg-white/20 hover:bg-white/40'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Right Column: Editorial Description (col-span-5) */}
           <div className="lg:col-span-5 flex flex-col justify-center">
-            {/* Small Gold Tag */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#f8c12c]/10 border border-[#f8c12c]/20 text-[#f8c12c] text-xs font-sub uppercase tracking-widest w-fit mb-4">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Echoes of Euphoria</span>
-            </div>
-
             {/* Editorial Headline */}
             <h3 className="font-editorial text-3xl sm:text-4xl lg:text-5xl text-[#f3ede2] font-normal tracking-wide leading-tight mb-5">
               Where Heritage Meets The Pulse of Tomorrow
@@ -711,34 +608,6 @@ export const CinematicGallerySection: React.FC<CinematicGallerySectionProps> = (
                 cheers, intense conclave debates, breathtaking dance showcases, and friendships
                 forged beneath the night skies of IIM Jammu.
               </p>
-            </div>
-
-            {/* Festival Metrics Strip */}
-            <div className="grid grid-cols-3 gap-4 pt-6 mt-6 border-t border-white/10">
-              <div>
-                <span className="block font-editorial text-2xl sm:text-3xl text-[#f8c12c]">
-                  25K+
-                </span>
-                <span className="text-[11px] sm:text-xs uppercase tracking-wider text-[#94a3b8] font-sub">
-                  Total Footfall
-                </span>
-              </div>
-              <div>
-                <span className="block font-editorial text-2xl sm:text-3xl text-[#f8c12c]">
-                  50+
-                </span>
-                <span className="text-[11px] sm:text-xs uppercase tracking-wider text-[#94a3b8] font-sub">
-                  Fest Arenas
-                </span>
-              </div>
-              <div>
-                <span className="block font-editorial text-2xl sm:text-3xl text-[#f8c12c]">
-                  3 Days
-                </span>
-                <span className="text-[11px] sm:text-xs uppercase tracking-wider text-[#94a3b8] font-sub">
-                  Pure Reverie
-                </span>
-              </div>
             </div>
           </div>
         </div>

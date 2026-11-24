@@ -52,10 +52,7 @@ export function App() {
   };
 
   const handleScrollToRibbon = () => {
-    window.scrollTo({
-      top: window.innerHeight * 0.85,
-      behavior: 'smooth',
-    });
+    document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleNavigate = (page: 'home' | 'partners', section?: string) => {
@@ -76,7 +73,7 @@ export function App() {
         setTimeout(() => {
           document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
         }, 150);
-      } else if (section === 'gallery' || section === 'aftermovie') {
+      } else if (section === 'gallery' || section === 'aftermovie' || section === 'memories') {
         setTimeout(() => {
           document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
         }, 150);
@@ -134,7 +131,7 @@ export function App() {
           ) : (
             /* HOME LANDING VIEW */
             <>
-              {/* Section 1: Grand Hero with Scroll-Driven Transition into 3D Ribbon */}
+              {/* Section 1: Grand Hero with Scroll-Driven Transition */}
               <EmpyreanHero
                 onProgressChange={setHeroProgress}
                 onExploreClick={handleScrollToRibbon}
@@ -142,20 +139,20 @@ export function App() {
                 imageUrls={imageUrls}
               />
 
-              {/* Section 2: Discover Empyrean (Artists Section with Trikuta Mountain) */}
+              {/* Section 2: Complete Cinematic Video + Dual-Row Infinite Photo Gallery (Moments & Reveries) */}
+              <CinematicGallerySection
+                prefersReducedMotion={prefersReducedMotion}
+                onRegisterClick={handleOpenRegistration}
+              />
+
+              {/* Section 3: Discover Empyrean (Artists Section with Trikuta Mountain) */}
               <DiscoverEmpyrean
                 onRegisterClick={handleOpenRegistration}
                 isRibbonActive={heroProgress >= 0.5}
               />
 
-              {/* Section 3: Events Section (Cultural, Sports, Management) — Dark navy continuation of the mountains */}
+              {/* Section 4: Events Section (Cultural, Sports, Management) — Dark navy continuation of the mountains */}
               <EventsSection
-                onRegisterClick={handleOpenRegistration}
-              />
-
-              {/* Section 4: Complete Cinematic Video + Dual-Row Infinite Photo Gallery */}
-              <CinematicGallerySection
-                prefersReducedMotion={prefersReducedMotion}
                 onRegisterClick={handleOpenRegistration}
               />
 
@@ -178,9 +175,13 @@ export function App() {
         </main>
       )}
 
-      {/* 4. Global Fixed Screen Border: Sticks to the whole screen */}
+      {/* 4. Global Fixed Screen Border: Present in hero entrance, fades out on first scroll */}
       <div
-        className="fixed inset-0 pointer-events-none z-40 overflow-hidden"
+        className="fixed inset-0 pointer-events-none z-40 overflow-hidden transition-opacity duration-500 ease-out"
+        style={{
+          opacity: Math.max(0, 1 - heroProgress * 2.5),
+          display: heroProgress >= 0.99 ? 'none' : 'block',
+        }}
         aria-hidden="true"
       >
         <img

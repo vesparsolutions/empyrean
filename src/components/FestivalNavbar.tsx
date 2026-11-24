@@ -93,7 +93,19 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
 
   // Smooth Scroll Navigation Handlers
   const handleNavigate = useCallback(
-    (target: 'artists' | 'events' | 'experience' | 'partners' | 'register' | 'top' | 'sponsors') => {
+    (
+      target:
+        | 'artists'
+        | 'events'
+        | 'experience'
+        | 'partners'
+        | 'register'
+        | 'top'
+        | 'sponsors'
+        | 'gallery'
+        | 'memories'
+        | 'aftermovie'
+    ) => {
       setMobileMenuOpen(false);
 
       if (target === 'partners') {
@@ -126,8 +138,9 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
         return;
       }
 
-      // If user is still in hero phase (progress < 1), trigger ribbon transition first
+      // If user is still in hero phase (progress < 1), trigger transition first
       if (logoProgress < 0.95) {
+        window.dispatchEvent(new CustomEvent('empyrean:trigger-moments'));
         window.dispatchEvent(new CustomEvent('empyrean:trigger-ribbon'));
         if (target === 'artists') {
           setTimeout(() => {
@@ -136,6 +149,10 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
         } else if (target === 'events') {
           setTimeout(() => {
             document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
+          }, 1300);
+        } else if (target === 'gallery' || target === 'memories' || target === 'aftermovie') {
+          setTimeout(() => {
+            document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
           }, 1300);
         } else if (target === 'experience') {
           setTimeout(() => {
@@ -149,6 +166,8 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
         document.getElementById('artists')?.scrollIntoView({ behavior: 'smooth' });
       } else if (target === 'events') {
         document.getElementById('events')?.scrollIntoView({ behavior: 'smooth' });
+      } else if (target === 'gallery' || target === 'memories' || target === 'aftermovie') {
+        document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
       } else if (target === 'experience') {
         window.scrollTo({ top: window.innerHeight * 0.45, behavior: 'smooth' });
       }
@@ -162,10 +181,15 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
       return;
     }
     if (logoProgress < 0.95) {
+      window.dispatchEvent(new CustomEvent('empyrean:trigger-moments'));
       window.dispatchEvent(new CustomEvent('empyrean:trigger-ribbon'));
       onExploreClick?.();
     } else {
-      handleNavigate('top');
+      if (typeof window !== 'undefined' && window.scrollY <= 10) {
+        window.dispatchEvent(new CustomEvent('empyrean:return-to-hero'));
+      } else {
+        handleNavigate('top');
+      }
     }
   };
 

@@ -1,33 +1,135 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface EventsSectionProps {
   onRegisterClick?: (tier?: string) => void;
 }
 
-const EVENT_CARDS = [
+interface MetricItem {
+  id: string;
+  targetNumber: number;
+  label: string;
+  format: (value: number) => string;
+  finalDisplay: string;
+}
+
+const METRICS: MetricItem[] = [
   {
-    id: 'cultural',
-    title: 'Cultural',
-    image: '/cultural.png',
-    alt: 'Empyrean Cultural Events - Music, Dance & Dramatics',
+    id: 'footfall',
+    targetNumber: 25000,
+    label: 'Footfall',
+    format: (val) => `${Math.round(val).toLocaleString('en-IN')}+`,
+    finalDisplay: '25,000+',
   },
   {
-    id: 'sports',
-    title: 'Sports',
-    image: '/sports.png',
-    alt: 'Empyrean Sports Events - Athletics, Basketball & Field Championships',
+    id: 'events',
+    targetNumber: 20,
+    label: 'Events',
+    format: (val) => `${Math.round(val)}+`,
+    finalDisplay: '20+',
   },
   {
-    id: 'management',
-    title: 'Management',
-    image: '/mgmt.png',
-    alt: 'Empyrean Management Events - Strategy, Leadership & Case Competitions',
+    id: 'prizepool',
+    targetNumber: 200000,
+    label: 'Prize Pool',
+    format: (val) => `₹${Math.round(val).toLocaleString('en-IN')}+`,
+    finalDisplay: '₹2,00,000+',
   },
 ];
 
-export const EventsSection: React.FC<EventsSectionProps> = ({ onRegisterClick }) => {
+// Luxury quartic ease-out for silky-smooth deceleration
+const easeOutQuart = (t: number): number => {
+  return 1 - Math.pow(1 - t, 4);
+};
+
+export const EventsSection: React.FC<EventsSectionProps> = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const num0Ref = useRef<HTMLSpanElement>(null);
+  const num1Ref = useRef<HTMLSpanElement>(null);
+  const num2Ref = useRef<HTMLSpanElement>(null);
+
+  const [isVisible, setIsVisible] = useState(false);
+  const animRef = useRef<number | null>(null);
+  const hasAnimatedRef = useRef(false);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !hasAnimatedRef.current) {
+          hasAnimatedRef.current = true;
+          setIsVisible(true);
+
+          const refs = [num0Ref.current, num1Ref.current, num2Ref.current];
+          const startTime = performance.now();
+
+          // Elegant staggered durations and offsets
+          const config = [
+            { delay: 100, duration: 1600 },
+            { delay: 250, duration: 1400 },
+            { delay: 400, duration: 1700 },
+          ];
+
+          const tick = (now: number) => {
+            const elapsed = now - startTime;
+            let allDone = true;
+
+            for (let i = 0; i < METRICS.length; i++) {
+              const el = refs[i];
+              if (!el) continue;
+
+              const { delay, duration } = config[i];
+              const metric = METRICS[i];
+
+              if (elapsed < delay) {
+                allDone = false;
+                el.textContent = metric.format(0);
+              } else if (elapsed >= delay + duration) {
+                el.textContent = metric.finalDisplay;
+              } else {
+                allDone = false;
+                const progress = easeOutQuart((elapsed - delay) / duration);
+                const currentVal = metric.targetNumber * progress;
+                el.textContent = metric.format(currentVal);
+              }
+            }
+
+            if (!allDone) {
+              animRef.current = requestAnimationFrame(tick);
+            } else {
+              animRef.current = null;
+              // Guarantee exact final strings
+              for (let i = 0; i < METRICS.length; i++) {
+                if (refs[i]) refs[i]!.textContent = METRICS[i].finalDisplay;
+              }
+            }
+          };
+
+          animRef.current = requestAnimationFrame(tick);
+        }
+      },
+      { threshold: 0.25 }
+    );
+
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+      if (animRef.current) {
+        cancelAnimationFrame(animRef.current);
+      }
+      // Strictly maintain exact targets on cleanup
+      if (num0Ref.current) num0Ref.current.textContent = METRICS[0].finalDisplay;
+      if (num1Ref.current) num1Ref.current.textContent = METRICS[1].finalDisplay;
+      if (num2Ref.current) num2Ref.current.textContent = METRICS[2].finalDisplay;
+    };
+  }, []);
+
   return (
     <section
+      ref={sectionRef}
       id="events"
       className="relative w-full text-[#f8fafc] overflow-hidden select-none"
       style={{
@@ -40,7 +142,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRegisterClick })
       }}
       aria-label="Events"
     >
-      {/* 1. Indian Jali Grid Texture (matching Artists section foothill background) */}
+      {/* 1. Subtle Jali Pattern Background */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.045] z-0"
         style={{
@@ -54,63 +156,134 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRegisterClick })
         aria-hidden="true"
       />
 
-      {/* 2. Atmospheric Ambient Halo */}
+      {/* 2. Atmospheric Ambient Glow */}
       <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[1000px] h-[450px] sm:h-[600px] rounded-full pointer-events-none z-0"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] sm:w-[1100px] h-[500px] sm:h-[650px] rounded-full pointer-events-none z-0"
         style={{
           background:
-            'radial-gradient(circle, rgba(248, 193, 44, 0.08) 0%, rgba(224, 36, 117, 0.04) 45%, transparent 75%)',
-          filter: 'blur(75px)',
+            'radial-gradient(circle, rgba(248, 193, 44, 0.08) 0%, rgba(224, 36, 117, 0.03) 45%, transparent 75%)',
+          filter: 'blur(90px)',
         }}
         aria-hidden="true"
       />
 
       {/* Main Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 md:pt-32 pb-28 sm:pb-36 md:pb-44">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 md:pt-36 pb-28 sm:pb-36 md:pb-44">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-20">
-          <h2 className="font-heading text-4xl sm:text-5xl md:text-6xl tracking-tight text-[#fff6e0] drop-shadow-[0_4px_24px_rgba(248,193,44,0.25)] mb-3">
+        <div
+          className={`text-center max-w-2xl mx-auto mb-16 sm:mb-24 transition-all duration-1000 ease-out ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+          }`}
+        >
+          <span className="font-sub text-xs sm:text-sm uppercase tracking-[0.35em] text-[#f8c12c]/90 font-medium inline-block mb-3">
+            Arenas of Excellence
+          </span>
+          <h2 className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-[#fff6e0] drop-shadow-[0_4px_30px_rgba(248,193,44,0.25)] mb-4">
             Events
           </h2>
-          <p className="font-editorial italic text-lg sm:text-xl text-[#f8c12c]/75 max-w-md mx-auto leading-snug">
-            Three arenas of excellence
+          <p className="font-editorial italic text-lg sm:text-xl md:text-2xl text-[#f8c12c]/75 max-w-lg mx-auto leading-relaxed">
+            Three days across Cultural, Sports & Management
           </p>
+          {/* Subtle Warm Divider */}
+          <div
+            className="w-20 h-px bg-gradient-to-r from-transparent via-[#f8c12c]/40 to-transparent mx-auto mt-6"
+            aria-hidden="true"
+          />
         </div>
 
-        {/* 3 User-Uploaded Event Cards (1.25x Larger Cards & 1.25x Larger Gaps) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 lg:gap-[50px] items-stretch max-w-[1320px] mx-auto">
-          {EVENT_CARDS.map((card) => (
-            <div
-              key={card.id}
-              onClick={() => onRegisterClick?.(card.id)}
-              className="group relative flex flex-col cursor-pointer select-none transition-all duration-500 hover:-translate-y-3.5 hover:scale-[1.025] max-w-[420px] md:max-w-none mx-auto w-full"
-              title={`Explore ${card.title} Events`}
-            >
-              {/* Card Container */}
-              <div
-                className="relative w-full rounded-[32px] overflow-hidden transition-all duration-500"
-                style={{
-                  filter: 'drop-shadow(0 20px 44px rgba(0, 0, 0, 0.60))',
-                }}
+        {/* Pure Open Editorial Stats with Smooth Luxury Count-Up & Reveal */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-12 md:gap-0 max-w-5xl mx-auto">
+          {/* Stat 1: Footfall (Target: 25,000+) */}
+          <div
+            className={`flex-1 text-center w-full transition-all duration-1000 ease-out ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+            style={{ transitionDelay: '100ms' }}
+          >
+            <div className="relative inline-block">
+              <span
+                ref={num0Ref}
+                className="block font-editorial text-6xl sm:text-7xl md:text-8xl lg:text-[96px] text-transparent bg-clip-text bg-gradient-to-b from-[#ffffff] via-[#fff4e0] to-[#e5c57b] tracking-tight leading-none tabular-nums drop-shadow-[0_4px_30px_rgba(255,255,255,0.18)]"
               >
-                {/* The Custom Card Image */}
-                <img
-                  src={card.image}
-                  alt={card.alt}
-                  className="w-full h-auto object-cover block transition-transform duration-700 group-hover:scale-[1.03]"
-                  loading="lazy"
-                />
-
-                {/* Subtle Hover Glow Ring */}
-                <div
-                  className="absolute inset-0 rounded-[32px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{
-                    boxShadow: 'inset 0 0 28px rgba(248, 193, 44, 0.28), 0 0 36px rgba(248, 193, 44, 0.22)',
-                  }}
-                />
-              </div>
+                25,000+
+              </span>
             </div>
-          ))}
+            <span className="block font-sub text-xs sm:text-sm uppercase tracking-[0.35em] text-[#f8c12c] font-semibold mt-4">
+              Footfall
+            </span>
+          </div>
+
+          {/* Plain Divider 1 (Desktop) */}
+          <div
+            className={`hidden md:block w-px h-24 bg-gradient-to-b from-transparent via-white/15 to-transparent transition-opacity duration-1000 ${
+              isVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ transitionDelay: '250ms' }}
+            aria-hidden="true"
+          />
+          {/* Plain Divider 1 (Mobile) */}
+          <div
+            className={`md:hidden w-32 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent transition-opacity duration-1000 ${
+              isVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+            aria-hidden="true"
+          />
+
+          {/* Stat 2: Events (Target: 20+) */}
+          <div
+            className={`flex-1 text-center w-full transition-all duration-1000 ease-out ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+            style={{ transitionDelay: '250ms' }}
+          >
+            <div className="relative inline-block">
+              <span
+                ref={num1Ref}
+                className="block font-editorial text-6xl sm:text-7xl md:text-8xl lg:text-[96px] text-transparent bg-clip-text bg-gradient-to-b from-[#ffffff] via-[#fff4e0] to-[#e5c57b] tracking-tight leading-none tabular-nums drop-shadow-[0_4px_30px_rgba(255,255,255,0.18)]"
+              >
+                20+
+              </span>
+            </div>
+            <span className="block font-sub text-xs sm:text-sm uppercase tracking-[0.35em] text-[#f8c12c] font-semibold mt-4">
+              Events
+            </span>
+          </div>
+
+          {/* Plain Divider 2 (Desktop) */}
+          <div
+            className={`hidden md:block w-px h-24 bg-gradient-to-b from-transparent via-white/15 to-transparent transition-opacity duration-1000 ${
+              isVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ transitionDelay: '400ms' }}
+            aria-hidden="true"
+          />
+          {/* Plain Divider 2 (Mobile) */}
+          <div
+            className={`md:hidden w-32 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent transition-opacity duration-1000 ${
+              isVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+            aria-hidden="true"
+          />
+
+          {/* Stat 3: Prize Pool (Target: ₹2,00,000+) */}
+          <div
+            className={`flex-1 text-center w-full transition-all duration-1000 ease-out ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+            style={{ transitionDelay: '400ms' }}
+          >
+            <div className="relative inline-block">
+              <span
+                ref={num2Ref}
+                className="block font-editorial text-6xl sm:text-7xl md:text-8xl lg:text-[96px] text-transparent bg-clip-text bg-gradient-to-b from-[#ffffff] via-[#fff4e0] to-[#e5c57b] tracking-tight leading-none tabular-nums drop-shadow-[0_4px_30px_rgba(255,255,255,0.18)]"
+              >
+                ₹2,00,000+
+              </span>
+            </div>
+            <span className="block font-sub text-xs sm:text-sm uppercase tracking-[0.35em] text-[#f8c12c] font-semibold mt-4">
+              Prize Pool
+            </span>
+          </div>
         </div>
       </div>
 

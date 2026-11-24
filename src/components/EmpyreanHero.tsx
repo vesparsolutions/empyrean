@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { CinematicRibbonGallery } from './CinematicRibbonGallery';
 
 interface EmpyreanHeroProps {
   onExploreClick?: () => void;
@@ -11,18 +10,17 @@ interface EmpyreanHeroProps {
 export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
   onExploreClick,
   prefersReducedMotion = false,
-  imageUrls,
   onProgressChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [logoProgress, setLogoProgress] = useState(0);
-  const [isRibbonTriggered, setIsRibbonTriggered] = useState(false);
+  const [phase, setPhase] = useState<'hero' | 'transitioning' | 'content'>('hero');
 
   // Phase state:
   // 'hero' = Initial grand entrance (scroll locked on body, waiting for single scroll)
-  // 'transitioning' = Animating between hero and ribbon (all inputs intercepted & swallowed)
-  // 'ribbon' = Landed in Ribbon section (normal native scrolling active)
-  const phaseRef = useRef<'hero' | 'transitioning' | 'ribbon'>('hero');
+  // 'transitioning' = Animating between hero and content (all inputs intercepted & swallowed)
+  // 'content' = Landed in content section (normal native scrolling active)
+  const phaseRef = useRef<'hero' | 'transitioning' | 'content'>('hero');
   const currentProgressRef = useRef(0);
   const animRef = useRef<number | null>(null);
   const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,6 +48,7 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
     window.scrollTo(0, 0);
     lockDocumentScroll();
     phaseRef.current = 'hero';
+    setPhase('hero');
     currentProgressRef.current = 0;
     setLogoProgress(0);
     onProgressChange?.(0);
@@ -76,6 +75,7 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
 
       // ── 3. Lock phase & scroll immediately ──
       phaseRef.current = 'transitioning';
+      setPhase('transitioning');
       lockDocumentScroll();
       window.scrollTo(0, 0);
 
@@ -96,7 +96,9 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
         currentProgressRef.current = clampedTarget;
         setLogoProgress(clampedTarget);
         onProgressChange?.(clampedTarget);
-        phaseRef.current = clampedTarget === 1 ? 'ribbon' : 'hero';
+        const nextPhase = clampedTarget === 1 ? 'content' : 'hero';
+        phaseRef.current = nextPhase;
+        setPhase(nextPhase);
         if (clampedTarget === 1) {
           unlockDocumentScroll();
         } else {
@@ -112,7 +114,9 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
         currentProgressRef.current = clampedTarget;
         setLogoProgress(clampedTarget);
         onProgressChange?.(clampedTarget);
-        phaseRef.current = clampedTarget === 1 ? 'ribbon' : 'hero';
+        const nextPhase = clampedTarget === 1 ? 'content' : 'hero';
+        phaseRef.current = nextPhase;
+        setPhase(nextPhase);
         if (clampedTarget === 1) unlockDocumentScroll();
         else lockDocumentScroll();
         return;
@@ -154,14 +158,16 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
             // Guard: only commit if this generation is still current
             if (gen !== animGenRef.current) return;
             if (clampedTarget === 1) {
-              phaseRef.current = 'ribbon';
+              phaseRef.current = 'content';
+              setPhase('content');
               unlockDocumentScroll();
             } else {
               phaseRef.current = 'hero';
+              setPhase('hero');
               lockDocumentScroll();
             }
             cooldownTimerRef.current = null;
-          }, 400);
+          }, 350);
         }
       };
 
@@ -170,7 +176,7 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
     [prefersReducedMotion, lockDocumentScroll, unlockDocumentScroll, onProgressChange]
   );
 
-  // Global event trigger for navbar/external interactions
+  // Global event triggers for navbar/external interactions
   useEffect(() => {
     const handleCustomTrigger = () => {
       if (phaseRef.current === 'hero') {
@@ -178,18 +184,24 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
         onExploreClick?.();
       }
     };
-    window.addEventListener('empyrean:trigger-ribbon', handleCustomTrigger);
-    return () => window.removeEventListener('empyrean:trigger-ribbon', handleCustomTrigger);
-  }, [animateTo, onExploreClick]);
 
-  // Update Ribbon trigger state with hysteresis
-  useEffect(() => {
-    if (logoProgress >= 0.78) {
-      setIsRibbonTriggered(true);
-    } else if (logoProgress <= 0.35) {
-      setIsRibbonTriggered(false);
-    }
-  }, [logoProgress]);
+    const handleReturnToHero = () => {
+      if (phaseRef.current === 'content') {
+        window.scrollTo({ top: 0 });
+        animateTo(0, 1100);
+      }
+    };
+
+    window.addEventListener('empyrean:trigger-ribbon', handleCustomTrigger);
+    window.addEventListener('empyrean:trigger-moments', handleCustomTrigger);
+    window.addEventListener('empyrean:return-to-hero', handleReturnToHero);
+
+    return () => {
+      window.removeEventListener('empyrean:trigger-ribbon', handleCustomTrigger);
+      window.removeEventListener('empyrean:trigger-moments', handleCustomTrigger);
+      window.removeEventListener('empyrean:return-to-hero', handleReturnToHero);
+    };
+  }, [animateTo, onExploreClick]);
 
   // One-Scroll Gesture Listener & Input Lock
   useEffect(() => {
@@ -204,7 +216,7 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
         e.preventDefault();
         e.stopPropagation();
 
-        // Any downward scroll triggers the smooth animation into the ribbon section
+        // Any downward scroll triggers the smooth animation into the moments section
         if (e.deltaY > 3) {
           animateTo(1, 1250);
         }
@@ -219,14 +231,15 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
         return;
       }
 
-      // 3. In Ribbon Phase: Normal scrolling is active!
+      // 3. In Content Phase: Normal scrolling is active!
       // If user scrolls up when already at the top of the page, return to hero
-      if (currentPhase === 'ribbon' && window.scrollY <= 5 && e.deltaY < -15) {
+      if (currentPhase === 'content' && window.scrollY <= 5 && e.deltaY < -25) {
         e.preventDefault();
         e.stopPropagation();
         animateTo(0, 1100);
         return;
-      }    };
+      }
+    };
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
@@ -252,7 +265,7 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
         return;
       }
 
-      if (currentPhase === 'ribbon' && window.scrollY <= 5) {
+      if (currentPhase === 'content' && window.scrollY <= 5) {
         const currentY = e.touches[0].clientY;
         const deltaY = touchStartY - currentY;
         if (deltaY < -18) {
@@ -282,7 +295,7 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
         return;
       }
 
-      if (currentPhase === 'ribbon' && window.scrollY <= 5) {
+      if (currentPhase === 'content' && window.scrollY <= 5) {
         if (['ArrowUp', 'PageUp'].includes(e.key)) {
           e.preventDefault();
           animateTo(0, 1100);
@@ -303,14 +316,21 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
     };
   }, [animateTo, unlockDocumentScroll]);
 
+  const isHidden = phase === 'content' && logoProgress >= 0.99;
+
   return (
     <div
       ref={containerRef}
       id="hero-scroll-container"
-      className="relative w-full h-screen bg-[#0b1839]"
+      className="fixed inset-0 z-30 overflow-hidden select-none"
+      style={{
+        opacity: Math.max(0, 1 - logoProgress * 1.5),
+        pointerEvents: logoProgress >= 0.8 ? 'none' : 'auto',
+        display: isHidden ? 'none' : 'block',
+      }}
     >
       {/* Viewport stage — clips any overflow so border frame doesn't scroll */}
-      <div className="relative w-full h-full overflow-hidden flex items-center justify-center bg-[#0b1839]">
+      <div className="relative w-full h-full overflow-hidden flex items-center justify-center bg-[#071126]">
         {/* Full-bleed stage */}
         <div
           id="hero-stage"
@@ -552,23 +572,6 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
               className="w-full h-auto object-contain block drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]"
               loading="eager"
               draggable={false}
-            />
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════════════
-              LAYER 10 — Ribbon Gallery (triggers on scroll complete)
-          ═══════════════════════════════════════════════════════════════ */}
-          <div
-            id="cinematic-ribbon-wrapper"
-            className="absolute inset-0 z-[20] flex items-center justify-center overflow-hidden"
-            style={{
-              pointerEvents: isRibbonTriggered ? 'auto' : 'none',
-            }}
-          >
-            <CinematicRibbonGallery
-              isTriggered={isRibbonTriggered}
-              prefersReducedMotion={prefersReducedMotion}
-              initialImageUrls={imageUrls}
             />
           </div>
 
