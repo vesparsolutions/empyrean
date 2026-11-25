@@ -210,9 +210,7 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
               </li>
               <li className="pt-1">
                 <a
-                  href="https://forms.gle/iZxtVb1twASMDSQv7"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/tickets"
                   onClick={(e) => {
                     if (onRegisterClick) {
                       e.preventDefault();

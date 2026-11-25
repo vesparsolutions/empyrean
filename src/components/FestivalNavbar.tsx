@@ -248,11 +248,15 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
             </button>
 
             <a
-              href="https://forms.gle/iZxtVb1twASMDSQv7"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/tickets"
+              onClick={(e) => {
+                if (onRegisterClick) {
+                  e.preventDefault();
+                  onRegisterClick();
+                }
+              }}
               className="inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer -my-8 sm:-my-11 md:-my-12 -mr-3 sm:-mr-5"
-              title="Register for Empyrean"
+              title="Register & Book Tickets for Empyrean"
             >
               <img
                 src="/register.png"
@@ -306,11 +310,16 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
                 Partners
               </button>
               <a
-                href="https://forms.gle/iZxtVb1twASMDSQv7"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/tickets"
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  if (onRegisterClick) {
+                    e.preventDefault();
+                    onRegisterClick();
+                  }
+                }}
                 className="w-full flex items-center justify-center pt-2 transition-all duration-300 hover:scale-[1.02] active:scale-95"
-                title="Register for Empyrean"
+                title="Register & Book Tickets for Empyrean"
               >
                 <img
                   src="/register.png"
@@ -384,11 +393,9 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
         }}
       >
         <a
-          href="https://forms.gle/iZxtVb1twASMDSQv7"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/tickets"
           className="group relative block transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer focus:outline-none"
-          title="Register for Empyrean"
+          title="Register & Book Tickets for Empyrean"
           onClick={(e) => {
             if (onRegisterClick) {
               e.preventDefault();
