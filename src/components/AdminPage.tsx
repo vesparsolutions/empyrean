@@ -17,6 +17,7 @@ import {
   ScanLine,
 } from 'lucide-react';
 import QRCodeStyling from 'qr-code-styling';
+import { jsPDF } from 'jspdf';
 import type { Session } from '@supabase/supabase-js';
 import {
   supabase,
@@ -28,7 +29,49 @@ import {
   type SupabaseTicketRow,
   type TicketRecordRow,
   type AdminTicketTable,
+  type TicketPassTable,
 } from '../lib/supabase';
+
+const TICKET_TEMPLATE_BY_TABLE: Record<TicketPassTable, string> = {
+  early_birds: '/ticket-templates/Alldays.png',
+  all_access: '/ticket-templates/Alldays.png',
+  buy_four_get_one: '/ticket-templates/B4G1.png',
+  couple: '/ticket-templates/Couple.png',
+  day_1: '/ticket-templates/Day1.png',
+  day_2: '/ticket-templates/Day2.png',
+  day_3: '/ticket-templates/Day3.png',
+};
+
+function loadHtmlImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    img.src = src;
+  });
+}
+
+function drawRoundedRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
 
 export interface AdminPageProps {
   onOpenScanner?: () => void;
@@ -253,12 +296,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({
 
     try {
       const qrCode = new QRCodeStyling({
-        width: 1000,
-        height: 1000,
+        width: 600,
+        height: 600,
         type: 'canvas',
         data: token,
         image: '/vespar-qr.png',
-        margin: 36,
+        margin: 18,
         qrOptions: {
           errorCorrectionLevel: 'H',
         },
@@ -285,20 +328,86 @@ export const AdminPage: React.FC<AdminPageProps> = ({
         },
       });
 
+      const qrRaw = await qrCode.getRawData('png');
+      if (!qrRaw) {
+        throw new Error('Could not generate QR image data.');
+      }
+      const qrBlob = qrRaw instanceof Blob ? qrRaw : new Blob([new Uint8Array(qrRaw as ArrayBuffer)], { type: 'image/png' });
+      const qrObjectUrl = URL.createObjectURL(qrBlob);
+
+      const templatePath =
+        (saveResult.table && TICKET_TEMPLATE_BY_TABLE[saveResult.table]) ||
+        '/ticket-templates/Alldays.png';
+
+      let ticketDataUrl = '';
+      let ticketWidth = 1920;
+      let ticketHeight = 819;
+
+      try {
+        const [templateImg, qrImg] = await Promise.all([
+          loadHtmlImage(templatePath),
+          loadHtmlImage(qrObjectUrl),
+        ]);
+
+        ticketWidth = templateImg.naturalWidth || 1920;
+        ticketHeight = templateImg.naturalHeight || 819;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = ticketWidth;
+        canvas.height = ticketHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          throw new Error('Canvas 2D context unavailable.');
+        }
+
+        // 1. Draw the full ticket artwork
+        ctx.drawImage(templateImg, 0, 0, ticketWidth, ticketHeight);
+
+        // 2. Place QR centered in the right stub gap between "EMPYREAN 2026" and "ADMIT ..."
+        // Measured stub interior: X=1600..1878 (centerX=1739), clear Y=247..569 (centerY=408)
+        const qrSize = Math.round(ticketWidth * (240 / 1920));
+        const qrX = Math.round(ticketWidth * (1739 / 1920) - qrSize / 2);
+        const qrY = Math.round(ticketHeight * (408 / 819) - qrSize / 2);
+        const cardRadius = Math.round(qrSize * 0.065);
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
+        ctx.shadowBlur = 14;
+        ctx.shadowOffsetY = 4;
+        ctx.fillStyle = '#ffffff';
+        drawRoundedRectPath(ctx, qrX, qrY, qrSize, qrSize, cardRadius);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        drawRoundedRectPath(ctx, qrX, qrY, qrSize, qrSize, cardRadius);
+        ctx.clip();
+        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+        ctx.restore();
+
+        ticketDataUrl = canvas.toDataURL('image/jpeg', 0.96);
+      } finally {
+        URL.revokeObjectURL(qrObjectUrl);
+      }
+
       const safeBuyerName =
         entry.name
           .trim()
           .replace(/[<>:"/\\|?*]+/g, '')
           .replace(/\s+/g, '_') || 'Delegate';
 
-      await qrCode.download({
-        name: `${safeBuyerName}_Empyrean`,
-        extension: 'png',
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [ticketWidth, ticketHeight],
+        hotfixes: ['px_scaling'],
       });
+      pdf.addImage(ticketDataUrl, 'JPEG', 0, 0, ticketWidth, ticketHeight);
+      pdf.save(`${safeBuyerName}_Empyrean.pdf`);
 
       setActionBanner({
         type: 'success',
-        message: `${saveResult.alreadyIssued ? 'Re-downloaded' : 'Issued & saved'} QR pass in ${
+        message: `${saveResult.alreadyIssued ? 'Re-downloaded' : 'Issued & saved'} PDF ticket in ${
           saveResult.table
         } for ${entry.name} (Token: ${token}).`,
       });
