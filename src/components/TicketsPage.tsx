@@ -51,6 +51,26 @@ interface TicketTier {
   price: number;
   passesPerUnit: number;
   maxPerOrder: number;
+  isEarlyBird?: boolean;
+}
+
+const EARLY_BIRD_DEADLINE_MS = new Date('2026-12-01T00:00:00+05:30').getTime();
+
+function formatEarlyBirdCountdown(nowMs: number): { expired: boolean; text: string } {
+  const diff = EARLY_BIRD_DEADLINE_MS - nowMs;
+  if (diff <= 0) {
+    return { expired: true, text: 'Ends Nov 30 Midnight' };
+  }
+  const totalSeconds = Math.floor(diff / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return {
+    expired: false,
+    text: `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s left`,
+  };
 }
 
 interface AttendeeSlot {
@@ -79,6 +99,18 @@ interface AttendeeDetails {
 }
 
 const FALLBACK_FEST_TICKETS: TicketTier[] = [
+  {
+    id: '7',
+    kind: 'standard',
+    name: 'Early Birds',
+    tag: 'Early Bird Offer • Full 3-Day Access',
+    description:
+      'Limited-time early bird pass with full access across all 3 days of Empyrean 2026 — valid before 1st Dec.',
+    price: 699,
+    passesPerUnit: 1,
+    maxPerOrder: 5,
+    isEarlyBird: true,
+  },
   {
     id: '1',
     kind: 'standard',
@@ -147,6 +179,20 @@ function mapSupabaseTicketRow(row: SupabaseTicketRow): TicketTier {
   const lower = title.toLowerCase();
   const price = Number(row.price);
 
+  if (lower.includes('early')) {
+    return {
+      id: String(row.id),
+      kind: 'standard',
+      name: title,
+      tag: 'Early Bird Offer • Full 3-Day Access',
+      description:
+        'Limited-time early bird pass with full access across all 3 days of Empyrean 2026 — valid before 1st Dec.',
+      price,
+      passesPerUnit: 1,
+      maxPerOrder: 5,
+      isEarlyBird: true,
+    };
+  }
   if (lower.includes('couple')) {
     return {
       id: String(row.id),
@@ -311,6 +357,16 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({
   const [statusLoading, setStatusLoading] = useState<boolean>(false);
   const [statusResult, setStatusResult] = useState<TicketStatusLookupResult | null>(null);
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState<boolean>(false);
+  const [earlyBirdNowMs, setEarlyBirdNowMs] = useState<number>(() => Date.now());
+
+  // Live 1-second ticker for Early Birds countdown (till Nov 30 midnight / before Dec 1)
+  useEffect(() => {
+    if (step !== 'overview' && step !== 'tickets') return;
+    const interval = window.setInterval(() => {
+      setEarlyBirdNowMs(Date.now());
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [step]);
 
   // Fetch ticket types and pricing live from Supabase `tickets` table
   useEffect(() => {
@@ -319,7 +375,10 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({
       try {
         const rows = await fetchFestivalTickets();
         if (mounted && rows.length > 0) {
-          setTickets(rows.map(mapSupabaseTicketRow));
+          const mapped = rows
+            .map(mapSupabaseTicketRow)
+            .sort((a, b) => (a.isEarlyBird ? 0 : 1) - (b.isEarlyBird ? 0 : 1));
+          setTickets(mapped);
         }
       } finally {
         if (mounted) setTicketsLoading(false);
@@ -614,22 +673,47 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({
   const renderPassCard = (ticket: TicketTier, mode: 'overview' | 'selector') => {
     const qty = quantities[ticket.id] || 0;
     const isSelected = mode === 'selector' && qty > 0;
+    const isEarly = Boolean(ticket.isEarlyBird);
+    const countdown = isEarly ? formatEarlyBirdCountdown(earlyBirdNowMs) : null;
 
     return (
       <div
         key={ticket.id}
-        className={`bg-white border rounded-xl p-5 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-colors ${
-          isSelected
-            ? 'border-slate-900/40 ring-1 ring-slate-900/10'
-            : 'border-slate-200/90 hover:border-slate-300'
+        className={`border rounded-xl p-5 sm:p-6 transition-colors ${
+          isEarly
+            ? isSelected
+              ? 'bg-gradient-to-br from-amber-50/90 via-white to-amber-50/40 border-amber-500 ring-1 ring-amber-400/40 shadow-[0_3px_12px_rgba(245,158,11,0.12)]'
+              : 'bg-gradient-to-br from-amber-50/65 via-white to-amber-50/25 border-amber-300/90 hover:border-amber-400 shadow-[0_2px_8px_rgba(245,158,11,0.08)]'
+            : isSelected
+            ? 'bg-white border-slate-900/40 ring-1 ring-slate-900/10 shadow-[0_1px_3px_rgba(0,0,0,0.03)]'
+            : 'bg-white border-slate-200/90 hover:border-slate-300 shadow-[0_1px_3px_rgba(0,0,0,0.03)]'
         }`}
       >
-        <h3 className="text-base font-bold text-slate-900">{ticket.name}</h3>
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-base font-bold text-slate-900">{ticket.name}</h3>
+
+          {countdown && (
+            <span
+              className="inline-flex items-center gap-1.5 bg-amber-100/90 text-amber-900 border border-amber-300/80 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tabular-nums shrink-0 whitespace-nowrap"
+              title="Offer closes 30 Nov, 11:59 PM IST"
+            >
+              <Clock className="w-3 h-3 text-amber-700 shrink-0" />
+              <span>{countdown.text}</span>
+            </span>
+          )}
+        </div>
+
         <p className="text-xs sm:text-[13px] text-slate-500 mt-1 max-w-xl leading-relaxed">
           {ticket.description}
         </p>
         <div className="mt-2.5">
-          <span className="inline-block bg-[#f1f5f9] text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded">
+          <span
+            className={`inline-block text-[11px] font-medium px-2.5 py-1 rounded ${
+              isEarly
+                ? 'bg-amber-100/80 text-amber-900 border border-amber-200/80'
+                : 'bg-[#f1f5f9] text-slate-600'
+            }`}
+          >
             {ticket.tag}
           </span>
         </div>

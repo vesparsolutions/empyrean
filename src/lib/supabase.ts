@@ -193,6 +193,7 @@ export async function moveUnverifiedBooking(
 }
 
 export type TicketPassTable =
+  | 'early_birds'
   | 'all_access'
   | 'buy_four_get_one'
   | 'couple'
@@ -201,6 +202,7 @@ export type TicketPassTable =
   | 'day_3';
 
 export const ALL_TICKET_PASS_TABLES: TicketPassTable[] = [
+  'early_birds',
   'all_access',
   'buy_four_get_one',
   'couple',
@@ -211,6 +213,7 @@ export const ALL_TICKET_PASS_TABLES: TicketPassTable[] = [
 
 export function resolvePassTable(ticketId: number, ticketName?: string): TicketPassTable | null {
   const lower = (ticketName || '').toLowerCase();
+  if (lower.includes('early')) return 'early_birds';
   if (lower.includes('all')) return 'all_access';
   if (lower.includes('buy 4') || lower.includes('4 get 1')) return 'buy_four_get_one';
   if (lower.includes('couple')) return 'couple';
@@ -231,6 +234,8 @@ export function resolvePassTable(ticketId: number, ticketName?: string): TicketP
       return 'couple';
     case 6:
       return 'buy_four_get_one';
+    case 7:
+      return 'early_birds';
     default:
       return null;
   }
@@ -354,6 +359,7 @@ export async function ensureAndSaveTicketQrToken(
 export type ScannerDay = 1 | 2 | 3;
 
 export const DAY_ACCESS_BY_TABLE: Record<TicketPassTable, ScannerDay[]> = {
+  early_birds: [1, 2, 3],
   all_access: [1, 2, 3],
   buy_four_get_one: [1, 2, 3],
   couple: [1, 2, 3],
@@ -363,6 +369,7 @@ export const DAY_ACCESS_BY_TABLE: Record<TicketPassTable, ScannerDay[]> = {
 };
 
 export const PASS_TABLE_LABELS: Record<TicketPassTable, string> = {
+  early_birds: 'Early Birds Pass',
   all_access: 'All Access Pass',
   buy_four_get_one: 'Buy 4 Get 1 FREE',
   couple: 'Couple Entry',

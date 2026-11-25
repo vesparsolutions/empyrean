@@ -35,6 +35,25 @@ interface ScanHistoryEntry extends QrScanVerificationResult {
   scannedAt: string;
 }
 
+/** Picks the primary 1x rear camera instead of ultra-wide/telephoto/macro lenses on multi-camera phones. */
+function pickMainRearCameraId(devices: { id: string; label: string }[]): string {
+  if (devices.length === 0) return '';
+  const rear = devices.filter((d) => /back|rear|environment/i.test(d.label));
+  const pool = rear.length > 0 ? rear : devices;
+
+  const scored = pool.map((cam, index) => {
+    const label = cam.label.toLowerCase();
+    let score = 0;
+    if (/back|rear|environment/.test(label)) score += 10;
+    if (/main|primary|wide|1x|camera2 0|camera 0/.test(label)) score += 6;
+    if (/ultra|0\.5x|tele|macro|depth|ir|tof|zoom/.test(label)) score -= 12;
+    return { id: cam.id, score, index };
+  });
+
+  scored.sort((a, b) => b.score - a.score || a.index - b.index);
+  return scored[0]?.id || devices[0].id;
+}
+
 const PoweredByVespar: React.FC = () => (
   <div className="pt-6 pb-4 flex flex-col items-center justify-center select-none">
     <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 mb-1">
@@ -81,11 +100,14 @@ export const ScannerPage: React.FC<ScannerPageProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  const [showSlowVerifyPopup, setShowSlowVerifyPopup] = useState<boolean>(false);
   const [scanResult, setScanResult] = useState<QrScanVerificationResult | null>(null);
   const [scanHistory, setScanHistory] = useState<ScanHistoryEntry[]>([]);
 
   const qrInstanceRef = useRef<Html5Qrcode | null>(null);
   const isBusyRef = useRef<boolean>(false);
+  const userPickedCameraRef = useRef<boolean>(false);
+  const slowVerifyTimerRef = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Sync Supabase Auth session
@@ -120,8 +142,7 @@ export const ScannerPage: React.FC<ScannerPageProps> = ({
         const list = devices.map((d) => ({ id: d.id, label: d.label || 'Camera' }));
         setCameras(list);
         if (list.length > 0) {
-          const backCam = list.find((c) => /back|rear|environment/i.test(c.label));
-          setSelectedCameraId(backCam ? backCam.id : list[0].id);
+          setSelectedCameraId(pickMainRearCameraId(list));
         }
       })
       .catch(() => {
@@ -169,49 +190,54 @@ export const ScannerPage: React.FC<ScannerPageProps> = ({
     if (isBusyRef.current) return;
     isBusyRef.current = true;
     setIsVerifying(true);
+    setShowSlowVerifyPopup(false);
     setCameraError(null);
 
-    // Pause live camera scanning while result popup is visible
-    const qr = qrInstanceRef.current;
-    if (qr && qr.isScanning) {
-      try {
-        qr.pause(true);
-      } catch {
-        // ignore if pause not supported in current state
-      }
+    if (slowVerifyTimerRef.current !== null) {
+      window.clearTimeout(slowVerifyTimerRef.current);
     }
+    slowVerifyTimerRef.current = window.setTimeout(() => {
+      setShowSlowVerifyPopup(true);
+    }, 2000);
 
-    const result = await verifyAndCheckInQr(decodedText, selectedDayRef.current);
+    try {
+      const result = await verifyAndCheckInQr(decodedText, selectedDayRef.current);
+      setScanResult(result);
 
-    setIsVerifying(false);
-    setScanResult(result);
-
-    const timeStr = new Date().toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-    setScanHistory((prev) => [{ ...result, scannedAt: timeStr }, ...prev].slice(0, 15));
+      const timeStr = new Date().toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+      setScanHistory((prev) => [{ ...result, scannedAt: timeStr }, ...prev].slice(0, 15));
+    } catch (err) {
+      setScanResult({
+        valid: false,
+        status: 'error',
+        day: selectedDayRef.current,
+        qrCodeId: decodedText.trim(),
+        reason: err instanceof Error ? err.message : 'Unexpected error verifying QR code.',
+      });
+    } finally {
+      if (slowVerifyTimerRef.current !== null) {
+        window.clearTimeout(slowVerifyTimerRef.current);
+        slowVerifyTimerRef.current = null;
+      }
+      setShowSlowVerifyPopup(false);
+      setIsVerifying(false);
+    }
   }, []);
 
   const handleDismissResultAndResume = () => {
     setScanResult(null);
     isBusyRef.current = false;
-
-    const qr = qrInstanceRef.current;
-    if (qr && qr.isScanning) {
-      try {
-        qr.resume();
-      } catch {
-        // ignore
-      }
-    }
   };
 
   const startCamera = async (cameraIdOverride?: string) => {
     if (cameraStarting) return;
     setCameraError(null);
     setCameraStarting(true);
+    isBusyRef.current = false;
 
     try {
       await stopCamera();
@@ -222,23 +248,20 @@ export const ScannerPage: React.FC<ScannerPageProps> = ({
       });
       qrInstanceRef.current = qr;
 
-      const activeId = cameraIdOverride || selectedCameraId;
-      const cameraConfig: string | MediaTrackConstraints = activeId || {
+      // Unless user explicitly switched lenses, let the OS pick the primary rear 1x camera via facingMode
+      const explicitId = cameraIdOverride || (userPickedCameraRef.current ? selectedCameraId : '');
+      const cameraConfig: string | MediaTrackConstraints = explicitId || {
         facingMode: 'environment',
       };
 
       await qr.start(
         cameraConfig,
         {
-          fps: 25,
-          qrbox: (viewfinderWidth, viewfinderHeight) => {
-            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-            const size = Math.max(220, Math.floor(minEdge * 0.78));
-            return { width: size, height: size };
-          },
-          videoConstraints: activeId
+          fps: 15,
+          disableFlip: false,
+          videoConstraints: explicitId
             ? {
-                deviceId: { exact: activeId },
+                deviceId: { exact: explicitId },
                 width: { ideal: 1280 },
                 height: { ideal: 720 },
               }
@@ -256,6 +279,15 @@ export const ScannerPage: React.FC<ScannerPageProps> = ({
         }
       );
 
+      // Enable continuous autofocus where supported (helps close-up phone screen QR reads)
+      try {
+        await qr.applyVideoConstraints({
+          advanced: [{ focusMode: 'continuous' } as unknown as MediaTrackConstraintSet],
+        });
+      } catch {
+        // Ignore on browsers/cameras that do not expose focusMode
+      }
+
       setIsScanning(true);
 
       // Refresh available camera labels once permission is granted
@@ -265,8 +297,7 @@ export const ScannerPage: React.FC<ScannerPageProps> = ({
             const list = devices.map((d) => ({ id: d.id, label: d.label || 'Camera' }));
             setCameras(list);
             if (list.length > 0 && !selectedCameraId) {
-              const backCam = list.find((c) => /back|rear|environment/i.test(c.label));
-              setSelectedCameraId(backCam ? backCam.id : list[0].id);
+              setSelectedCameraId(pickMainRearCameraId(list));
             }
           })
           .catch(() => {});
@@ -284,6 +315,7 @@ export const ScannerPage: React.FC<ScannerPageProps> = ({
   };
 
   const handleCameraSwitch = async (nextId: string) => {
+    userPickedCameraRef.current = true;
     setSelectedCameraId(nextId);
     if (isScanning) {
       await startCamera(nextId);
@@ -793,6 +825,27 @@ export const ScannerPage: React.FC<ScannerPageProps> = ({
           </aside>
         </div>
       </main>
+
+      {/* ===================================================================== */}
+      {/* SLOW NETWORK (>2s) FLOATING VERIFYING POPUP                           */}
+      {/* ===================================================================== */}
+      {isVerifying && showSlowVerifyPopup && !scanResult && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm bg-[#0f172a] text-white rounded-xl px-4 py-3 shadow-2xl border border-white/10 flex items-center gap-3 animate-fadeIn"
+        >
+          <Loader2 className="w-5 h-5 text-emerald-400 animate-spin shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-semibold leading-tight">
+              Verifying QR pass...
+            </p>
+            <p className="text-[11px] text-slate-300 mt-0.5">
+              Checking Day {selectedDay} access, please wait
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ===================================================================== */}
       {/* ANIMATED GREEN TICK / RED CROSS CHECK-IN RESULT POPUP MODAL           */}

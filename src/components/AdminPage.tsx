@@ -50,6 +50,7 @@ const DEFAULT_TICKET_CATALOG: Record<number, SupabaseTicketRow> = {
   4: { id: 4, ticket: 'Day 3', price: 699 },
   5: { id: 5, ticket: 'Couple Entry', price: 1799 },
   6: { id: 6, ticket: 'Buy 4 Get 1 FREE', price: 4000 },
+  7: { id: 7, ticket: 'Early Birds', price: 699 },
 };
 
 const PoweredByVespar: React.FC = () => (
@@ -263,8 +264,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({
         },
         imageOptions: {
           hideBackgroundDots: true,
-          imageSize: 0.28,
-          margin: 8,
+          imageSize: 0.21,
+          margin: 6,
           crossOrigin: 'anonymous',
         },
         dotsOptions: {
