@@ -78,11 +78,11 @@ export const SPONSORS_LIST: SponsorLogoItem[] = [
     logoClassName: 'h-10 sm:h-12 md:h-14 max-w-[100px] sm:max-w-[120px] md:max-w-[135px]',
   },
   {
-    id: 'nescafe',
-    name: 'Nescafé',
-    logo: '/sponsors/nescafe.webp',
-    category: 'Official Beverage Partner',
-    logoClassName: 'h-8 sm:h-10 md:h-11 max-w-[160px] sm:max-w-[190px] md:max-w-[210px]',
+    id: 'nestle',
+    name: 'Nestlé',
+    logo: '/sponsors/nestle.webp',
+    category: 'Official Food & Beverage Partner',
+    logoClassName: 'h-8 sm:h-10 md:h-11 max-w-[150px] sm:max-w-[175px] md:max-w-[190px]',
   },
 ];
 

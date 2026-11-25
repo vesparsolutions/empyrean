@@ -1,5 +1,4 @@
 import React from 'react';
-import { Navigation, ArrowUpRight } from 'lucide-react';
 
 export const VisitUsSection: React.FC = () => {
   const googleMapsDirectionsUrl =
@@ -18,7 +17,7 @@ export const VisitUsSection: React.FC = () => {
       }}
       aria-label="Visit Us - IIM Jammu Jagti Campus"
     >
-      {/* 1. Indian Jali Grid Texture (matching Artists & Events foothill texture) */}
+      {/* Jali Grid Texture */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.045] z-0"
         style={{
@@ -32,7 +31,7 @@ export const VisitUsSection: React.FC = () => {
         aria-hidden="true"
       />
 
-      {/* 2. Ambient Gold Halo */}
+      {/* Ambient Gold Halo */}
       <div
         className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[950px] h-[400px] sm:h-[550px] rounded-full pointer-events-none z-0"
         style={{
@@ -52,71 +51,54 @@ export const VisitUsSection: React.FC = () => {
           </h2>
         </div>
 
-        {/* Content Grid: Left details card + Right Google Map iframe */}
+        {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
-          {/* LEFT COLUMN: Campus Details & Direct Get Directions Action (Sharp Edges, No Gold Corners) */}
+
+          {/* LEFT: Campus Info */}
           <div
-            className="lg:col-span-5 flex flex-col justify-between p-6 sm:p-8 md:p-10 border border-white/10"
+            className="lg:col-span-5 flex flex-col justify-between p-7 sm:p-9 md:p-10 rounded-sm border border-[#1e2d50]"
             style={{
-              background: 'linear-gradient(180deg, rgba(14, 28, 64, 0.92) 0%, rgba(7, 16, 38, 0.98) 100%)',
-              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.45)',
+              background: 'rgba(11, 20, 46, 0.7)',
             }}
           >
             <div>
-              {/* Institute Name */}
-              <h3 className="font-heading text-3xl sm:text-4xl text-[#fff6e0] tracking-wide mb-3">
+              <h3 className="font-heading text-3xl sm:text-4xl text-[#fff6e0] tracking-wide mb-6">
                 IIM Jammu
               </h3>
 
-              {/* Address */}
-              <p className="font-body text-sm sm:text-base text-[#cbd5e1] leading-relaxed mb-4">
+              <p className="font-body text-sm sm:text-[15px] text-[#b8c4d6] leading-relaxed mb-2">
                 Indian Institute of Management Jammu
+              </p>
+              <p className="font-body text-xs sm:text-sm text-[#7b8da6] leading-relaxed mb-8">
+                Jagti, PO Nagrota, NH-44
                 <br />
-                <span className="text-[#94a3b8] text-xs sm:text-sm">
-                  Jagti, PO Nagrota, NH-44, Jammu,
-                  <br />
-                  Jammu & Kashmir – 181221
-                </span>
+                Jammu &amp; Kashmir – 181221
               </p>
 
-              {/* Campus Context Note */}
-              <p className="font-body text-xs sm:text-sm text-[#94a3b8] leading-relaxed mb-8">
-                Located on the Jammu-Srinagar National Highway (NH-44), the 200-acre permanent Jagti campus lies at the scenic foothills of the Trikutas, ~14 km from Jammu Tawi Railway Station and ~18 km from Jammu Airport.
+              <p className="font-body text-xs sm:text-sm text-[#7b8da6] leading-relaxed">
+                200-acre permanent campus on the Jammu–Srinagar Highway, at the foothills of the Trikutas. 14 km from Jammu Tawi railway station, 18 km from the airport.
               </p>
             </div>
 
-            {/* Primary Action: Get Directions Button (Sharp Edges, No Pill Shape) */}
-            <div>
+            {/* Get Directions */}
+            <div className="mt-10">
               <a
                 href={googleMapsDirectionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full h-12 sm:h-13 rounded-none flex items-center justify-center gap-2 font-sub text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:bg-[#ebb11d] cursor-pointer"
-                style={{
-                  backgroundColor: '#f8c12c',
-                  color: '#071026',
-                  boxShadow: '0 4px 16px rgba(248, 193, 44, 0.20)',
-                }}
+                className="inline-flex items-center gap-2 font-sub text-xs sm:text-sm font-semibold uppercase tracking-[0.15em] text-[#f8c12c] hover:text-[#fff6e0] transition-colors duration-200 cursor-pointer group"
               >
-                <Navigation className="w-4 h-4" />
-                <span>Get Directions to IIM Jammu</span>
-                <ArrowUpRight className="w-4 h-4" />
+                <span>Get Directions</span>
+                <span className="inline-block transition-transform duration-200 group-hover:translate-x-1">→</span>
               </a>
-
-              <p className="text-center text-[11px] text-[#94a3b8] mt-2.5">
-                Opens Google Maps with turn-by-turn navigation
-              </p>
+              <div className="mt-2 h-px w-16 bg-[#f8c12c]/30" />
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Embedded Google Maps Iframe (Sharp Edges, No Overlay Tags) */}
+          {/* RIGHT: Google Maps */}
           <div
-            className="lg:col-span-7 overflow-hidden border border-white/10 min-h-[380px] sm:min-h-[460px] lg:min-h-full flex flex-col"
-            style={{
-              boxShadow: '0 16px 48px rgba(0, 0, 0, 0.45)',
-            }}
+            className="lg:col-span-7 overflow-hidden rounded-sm border border-[#1e2d50] min-h-[380px] sm:min-h-[460px] lg:min-h-full flex flex-col"
           >
-            {/* Clean Full-Bleed Google Maps Iframe */}
             <iframe
               title="IIM Jammu Jagti Campus Location Map"
               src="https://maps.google.com/maps?q=Indian+Institute+of+Management+Jammu+Jagti+Campus&t=&z=14&ie=UTF8&iwloc=&output=embed"

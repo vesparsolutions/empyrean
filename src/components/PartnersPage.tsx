@@ -103,13 +103,13 @@ export const PARTNERS_DATA: PartnerItem[] = [
     logoClassName: 'max-h-24 sm:max-h-32 md:max-h-36 max-w-[70%]',
   },
   {
-    id: 'nescafe',
-    name: 'Nescafé',
-    logo: '/sponsors/nescafe.webp',
-    lead: 'Fueling early-morning breakthroughs, midnight strategy, and spirited conversation.',
+    id: 'nestle',
+    name: 'Nestlé',
+    logo: '/sponsors/nestle.webp',
+    lead: 'Good food, Good life — nourishing talent, creativity, and vibrant celebrations.',
     description:
-      'Crafted from hand-selected beans with rich artisanal aroma. Nescafé keeps IIM Jammu’s sharpest minds and headline performers energized across late-night case preps, dawn sound checks, and spirited festival showdowns.',
-    website: 'https://nescafe.com',
+      'The world’s leading food and beverage pioneer, dedicated to enhancing quality of life and contributing to a healthier future. Nestlé joins Empyrean 2026 to energize participants, artists, and collegiate innovators across three unforgettable days at IIM Jammu.',
+    website: 'https://www.nestle.in',
     logoClassName: 'max-h-18 sm:max-h-22 md:max-h-26 max-w-[85%]',
   },
 ];
