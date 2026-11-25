@@ -31,14 +31,43 @@ export const SEO_CONFIG: Record<string, PageSEO> = {
       'Official Terms of Service for Empyrean, the annual fest of Indian Institute of Management Jammu. Guidelines on event participation, ticket admission, and registration verification.',
     canonical: 'https://empyreanfest.com/terms',
   },
+  tickets: {
+    title: 'Tickets & Delegate Passes | Empyrean - IIM Jammu',
+    description:
+      'Book official passes and competition tickets for Empyrean 2026, the annual cultural, sports, and management fest of IIM Jammu.',
+    canonical: 'https://empyreanfest.com/tickets',
+  },
+  admin: {
+    title: 'Admin Verification | Empyrean - IIM Jammu',
+    description: 'Verification dashboard for Empyrean 2026 ticket bookings.',
+    canonical: 'https://empyreanfest.com/admin',
+  },
+  scanner: {
+    title: 'Gate QR Scanner | Empyrean - IIM Jammu',
+    description: 'Festival gate QR scanner for Empyrean 2026 entry verification.',
+    canonical: 'https://empyreanfest.com/scanner',
+  },
 };
 
-export function updateDocumentSEO(page: 'home' | 'partners' | 'privacy' | 'terms') {
+export function updateDocumentSEO(
+  page: 'home' | 'partners' | 'tickets' | 'admin' | 'scanner' | 'privacy' | 'terms'
+) {
   if (typeof document === 'undefined') return;
   const config = SEO_CONFIG[page] || SEO_CONFIG.home;
 
   // Title
   document.title = config.title;
+
+  // Robots directive (noindex on admin & scanner routes)
+  const metaRobots = document.querySelector('meta[name="robots"]');
+  if (metaRobots) {
+    metaRobots.setAttribute(
+      'content',
+      page === 'admin' || page === 'scanner'
+        ? 'noindex, nofollow'
+        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+    );
+  }
 
   // Description
   const metaDesc = document.querySelector('meta[name="description"]');

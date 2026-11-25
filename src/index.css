@@ -413,3 +413,111 @@
     transform: none !important;
   }
 }
+
+/* Razorpay-style Animated Success Checkmark */
+@keyframes rzpStroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes rzpScale {
+  0%, 100% {
+    transform: none;
+  }
+  50% {
+    transform: scale3d(1.08, 1.08, 1);
+  }
+}
+
+@keyframes rzpFill {
+  100% {
+    box-shadow: inset 0px 0px 0px 44px #16a34a;
+  }
+}
+
+.rzp-checkmark {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 3;
+  stroke: #ffffff;
+  stroke-miterlimit: 10;
+  box-shadow: inset 0px 0px 0px #16a34a;
+  animation: rzpFill 0.35s ease-in-out 0.32s forwards, rzpScale 0.3s ease-in-out 0.72s both;
+}
+
+.rzp-checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+  stroke: #16a34a;
+  fill: none;
+  animation: rzpStroke 0.45s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.rzp-checkmark-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  stroke: #ffffff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: rzpStroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.55s forwards;
+}
+
+/* Animated Error / Rejection Crossmark */
+@keyframes rzpRejectFill {
+  100% {
+    box-shadow: inset 0px 0px 0px 44px #dc2626;
+  }
+}
+
+@keyframes rzpShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-4px);
+  }
+  40%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+.rzp-crossmark {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 3;
+  stroke: #ffffff;
+  stroke-miterlimit: 10;
+  box-shadow: inset 0px 0px 0px #dc2626;
+  animation: rzpRejectFill 0.35s ease-in-out 0.3s forwards, rzpShake 0.38s ease-in-out 0.68s both;
+}
+
+.rzp-crossmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+  stroke: #dc2626;
+  fill: none;
+  animation: rzpStroke 0.42s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.rzp-crossmark-line {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  stroke: #ffffff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  animation: rzpStroke 0.25s cubic-bezier(0.65, 0, 0.45, 1) 0.5s forwards;
+}
+
+

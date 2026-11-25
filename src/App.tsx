@@ -10,6 +10,9 @@ import { RegistrationModal } from './components/RegistrationModal';
 import { PartnersPage } from './components/PartnersPage';
 import { CinematicGallerySection } from './components/CinematicGallerySection';
 import { LegalModal, type LegalTab } from './components/LegalModal';
+import { TicketsPage } from './components/TicketsPage';
+import { AdminPage } from './components/AdminPage';
+import { ScannerPage } from './components/ScannerPage';
 import { updateDocumentSEO } from './utils/seo';
 
 export function App() {
@@ -17,11 +20,15 @@ export function App() {
   const [selectedTier, setSelectedTier] = useState<string>('Gold All-Access Pass');
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [heroProgress, setHeroProgress] = useState(0);
-  const [currentPage, setCurrentPage] = useState<'home' | 'partners'>(() => {
+  const [currentPage, setCurrentPage] = useState<'home' | 'partners' | 'tickets' | 'admin' | 'scanner'>(() => {
     if (typeof window === 'undefined') return 'home';
     const path = window.location.pathname;
     const hash = window.location.hash;
-    return path === '/partners' || hash === '#partners' ? 'partners' : 'home';
+    if (path === '/scanner' || path.startsWith('/scanner/') || hash === '#scanner') return 'scanner';
+    if (path === '/admin' || path.startsWith('/admin/') || hash === '#admin') return 'admin';
+    if (path === '/tickets' || path.startsWith('/tickets/') || hash === '#tickets') return 'tickets';
+    if (path === '/partners' || hash === '#partners') return 'partners';
+    return 'home';
   });
   const [legalModalTab, setLegalModalTab] = useState<LegalTab | null>(() => {
     if (typeof window === 'undefined') return null;
@@ -48,6 +55,12 @@ export function App() {
       updateDocumentSEO('terms');
     } else if (currentPage === 'partners') {
       updateDocumentSEO('partners');
+    } else if (currentPage === 'tickets') {
+      updateDocumentSEO('tickets');
+    } else if (currentPage === 'admin') {
+      updateDocumentSEO('admin');
+    } else if (currentPage === 'scanner') {
+      updateDocumentSEO('scanner');
     } else {
       updateDocumentSEO('home');
     }
@@ -59,7 +72,13 @@ export function App() {
       const path = window.location.pathname;
       const hash = window.location.hash;
 
-      if (path === '/partners' || hash === '#partners') {
+      if (path === '/scanner' || path.startsWith('/scanner/') || hash === '#scanner') {
+        setCurrentPage('scanner');
+      } else if (path === '/admin' || path.startsWith('/admin/') || hash === '#admin') {
+        setCurrentPage('admin');
+      } else if (path === '/tickets' || path.startsWith('/tickets/') || hash === '#tickets') {
+        setCurrentPage('tickets');
+      } else if (path === '/partners' || hash === '#partners') {
         setCurrentPage('partners');
       } else {
         setCurrentPage('home');
@@ -84,7 +103,16 @@ export function App() {
 
   const handleCloseLegalModal = () => {
     setLegalModalTab(null);
-    const targetPath = currentPage === 'partners' ? '/partners' : '/';
+    const targetPath =
+      currentPage === 'partners'
+        ? '/partners'
+        : currentPage === 'tickets'
+        ? '/tickets'
+        : currentPage === 'admin'
+        ? '/admin'
+        : currentPage === 'scanner'
+        ? '/scanner'
+        : '/';
     if (window.location.pathname === '/privacy' || window.location.pathname === '/terms') {
       window.history.pushState(null, '', targetPath);
     } else if (
@@ -112,8 +140,26 @@ export function App() {
     document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleNavigate = (page: 'home' | 'partners', section?: string) => {
-    if (page === 'partners') {
+  const handleNavigate = (page: 'home' | 'partners' | 'tickets' | 'admin' | 'scanner', section?: string) => {
+    if (page === 'scanner') {
+      if (window.location.pathname !== '/scanner') {
+        window.history.pushState(null, '', '/scanner');
+      }
+      setCurrentPage('scanner');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'admin') {
+      if (window.location.pathname !== '/admin') {
+        window.history.pushState(null, '', '/admin');
+      }
+      setCurrentPage('admin');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'tickets') {
+      if (window.location.pathname !== '/tickets') {
+        window.history.pushState(null, '', '/tickets');
+      }
+      setCurrentPage('tickets');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'partners') {
       if (window.location.pathname !== '/partners') {
         window.history.pushState(null, '', '/partners');
       }
@@ -155,26 +201,52 @@ export function App() {
     }
   };
 
+  const isUtilityPage = currentPage === 'tickets' || currentPage === 'admin' || currentPage === 'scanner';
+
   return (
     <div
       className={`relative min-h-screen ${
-        currentPage === 'partners' ? 'bg-[#FAF5EB]' : 'bg-[#0b1839]'
-      } text-[#f8fafc] font-body selection:bg-[#f8c12c] selection:text-[#0b1839]`}
+        isUtilityPage
+          ? 'bg-white text-slate-900'
+          : currentPage === 'partners'
+          ? 'bg-[#FAF5EB] text-[#f8fafc]'
+          : 'bg-[#0b1839] text-[#f8fafc]'
+      } font-body selection:bg-[#f8c12c] selection:text-[#0b1839]`}
     >
       {/* Main Experience: Direct Instant Load with No Preloader Screen */}
       <main id="main-content" className="relative w-full">
-        {/* Persistent Festival Navbar: Central Logo docks at top + 2-2 headings on each side */}
-        <FestivalNavbar
-          progress={heroProgress}
-          prefersReducedMotion={prefersReducedMotion}
-          onExploreClick={handleScrollToRibbon}
-          onRegisterClick={handleOpenRegistration}
-          currentPage={currentPage}
-          onNavigate={handleNavigate}
-        />
+        {/* Persistent Festival Navbar: Hidden on dedicated /tickets, /admin & /scanner views */}
+        {!isUtilityPage && (
+          <FestivalNavbar
+            progress={heroProgress}
+            prefersReducedMotion={prefersReducedMotion}
+            onExploreClick={handleScrollToRibbon}
+            onRegisterClick={handleOpenRegistration}
+            currentPage={currentPage}
+            onNavigate={handleNavigate}
+          />
+        )}
 
-        {/* DEDICATED PARTNERS PAGE VIEW */}
-        {currentPage === 'partners' ? (
+        {/* DEDICATED GATE QR SCANNER VIEW (/scanner) */}
+        {currentPage === 'scanner' ? (
+          <ScannerPage
+            onOpenAdmin={() => handleNavigate('admin')}
+            onBackToTickets={() => handleNavigate('tickets')}
+            onBackToHome={() => handleNavigate('home', 'top')}
+          />
+        ) : currentPage === 'admin' ? (
+          <AdminPage
+            onOpenScanner={() => handleNavigate('scanner')}
+            onBackToTickets={() => handleNavigate('tickets')}
+            onBackToHome={() => handleNavigate('home', 'top')}
+          />
+        ) : currentPage === 'tickets' ? (
+          <TicketsPage
+            onBackToHome={() => handleNavigate('home', 'top')}
+            onOpenPrivacyPolicy={() => handleOpenLegalModal('privacy')}
+            onOpenTerms={() => handleOpenLegalModal('terms')}
+          />
+        ) : currentPage === 'partners' ? (
           <PartnersPage
             onBackToHome={() => handleNavigate('home')}
             onRegisterClick={handleOpenRegistration}
@@ -228,22 +300,24 @@ export function App() {
           )}
         </main>
 
-      {/* 4. Global Fixed Screen Border: Present in hero entrance, fades out on first scroll */}
-      <div
-        className="fixed inset-0 pointer-events-none z-40 overflow-hidden transition-opacity duration-500 ease-out"
-        style={{
-          opacity: Math.max(0, 1 - heroProgress * 2.5),
-          display: heroProgress >= 0.99 ? 'none' : 'block',
-        }}
-        aria-hidden="true"
-      >
-        <img
-          src="/hero/screen-border.webp"
-          alt=""
-          className="w-full h-full object-fill pointer-events-none select-none"
-          draggable={false}
-        />
-      </div>
+      {/* 4. Global Fixed Screen Border: Present in hero entrance, fades out on first scroll (hidden on /tickets & /admin) */}
+      {!isUtilityPage && (
+        <div
+          className="fixed inset-0 pointer-events-none z-40 overflow-hidden transition-opacity duration-500 ease-out"
+          style={{
+            opacity: Math.max(0, 1 - heroProgress * 2.5),
+            display: heroProgress >= 0.99 ? 'none' : 'block',
+          }}
+          aria-hidden="true"
+        >
+          <img
+            src="/hero/screen-border.webp"
+            alt=""
+            className="w-full h-full object-fill pointer-events-none select-none"
+            draggable={false}
+          />
+        </div>
+      )}
 
       {/* 3. Interactive Registration Modal */}
       <RegistrationModal

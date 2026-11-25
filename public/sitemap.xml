@@ -17,6 +17,13 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <!-- Tickets -->
+  <url>
+    <loc>https://empyreanfest.com/tickets</loc>
+    <lastmod>2026-11-25T18:30:00+05:30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
   <!-- Privacy Policy -->
   <url>
     <loc>https://empyreanfest.com/privacy</loc>
