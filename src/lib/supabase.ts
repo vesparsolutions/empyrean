@@ -192,6 +192,42 @@ export async function moveUnverifiedBooking(
   }
 }
 
+/**
+ * Deletes an entry from `verified` or `rejected`.
+ * For `verified` entries, first removes any linked pass rows (`verified_id`) across
+ * all sorted pass tables so foreign-key constraints and scanner access are cleanly revoked.
+ */
+export async function deleteAdminTicketRecord(
+  table: 'verified' | 'rejected',
+  entryId: number
+): Promise<{ success: boolean; errorMessage?: string }> {
+  try {
+    if (table === 'verified') {
+      await Promise.all(
+        ALL_TICKET_PASS_TABLES.map(async (passTable) => {
+          try {
+            await supabase.from(passTable).delete().eq('verified_id', entryId);
+          } catch {
+            // Ignore tables without rows or delete policies
+          }
+        })
+      );
+    }
+
+    const { error } = await supabase.from(table).delete().eq('id', entryId);
+    if (error) {
+      return { success: false, errorMessage: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      errorMessage: err instanceof Error ? err.message : 'Unexpected network error',
+    };
+  }
+}
+
 export type TicketPassTable =
   | 'early_birds'
   | 'all_access'

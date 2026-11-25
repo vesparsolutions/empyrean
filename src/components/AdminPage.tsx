@@ -15,6 +15,8 @@ import {
   Ticket,
   Download,
   ScanLine,
+  MoreVertical,
+  Trash2,
 } from 'lucide-react';
 import QRCodeStyling from 'qr-code-styling';
 import { jsPDF } from 'jspdf';
@@ -24,6 +26,7 @@ import {
   fetchFestivalTickets,
   fetchAdminTableRecords,
   moveUnverifiedBooking,
+  deleteAdminTicketRecord,
   fetchIssuedQrTokens,
   ensureAndSaveTicketQrToken,
   type SupabaseTicketRow,
@@ -147,6 +150,27 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [issuedQrTokens, setIssuedQrTokens] = useState<Record<number, string>>({});
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    table: 'verified' | 'rejected';
+    row: TicketRecordRow;
+  } | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // Close row three-dots menu when clicking outside or pressing Escape
+  useEffect(() => {
+    if (!openMenuKey) return;
+    const handleClose = () => setOpenMenuKey(null);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenMenuKey(null);
+    };
+    window.addEventListener('click', handleClose);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('click', handleClose);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [openMenuKey]);
 
   // Check existing Supabase Auth session on mount & subscribe to changes
   useEffect(() => {
@@ -269,6 +293,43 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     setActionBanner({
       type: 'success',
       message: `${verb} ${entry.name}${newIdText}.`,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget || deletingId !== null) return;
+    const { table, row } = deleteTarget;
+    setDeletingId(row.id);
+    setActionBanner(null);
+
+    const result = await deleteAdminTicketRecord(table, row.id);
+    setDeletingId(null);
+
+    if (!result.success) {
+      setDeleteTarget(null);
+      setActionBanner({
+        type: 'error',
+        message: result.errorMessage || `Failed to delete #${row.id} from ${table}.`,
+      });
+      return;
+    }
+
+    if (table === 'verified') {
+      setVerifiedRows((prev) => prev.filter((r) => r.id !== row.id));
+      setIssuedQrTokens((prev) => {
+        if (!(row.id in prev)) return prev;
+        const next = { ...prev };
+        delete next[row.id];
+        return next;
+      });
+    } else {
+      setRejectedRows((prev) => prev.filter((r) => r.id !== row.id));
+    }
+
+    setDeleteTarget(null);
+    setActionBanner({
+      type: 'success',
+      message: `Deleted #${row.id} (${row.name}) from ${table}.`,
     });
   };
 
@@ -824,8 +885,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                 : `No entries in ${activeTab} right now.`}
             </div>
           ) : (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <div className="overflow-x-auto">
+            <div className="bg-white border border-slate-200 rounded-xl overflow-visible">
+              <div className="overflow-x-auto overflow-y-visible">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-200 bg-[#f8fafc] text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -834,19 +895,20 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                       <th className="py-3 px-4">Ticket Type</th>
                       <th className="py-3 px-4">Amount Paid</th>
                       <th className="py-3 px-4">UTR / Reference</th>
-                      {(activeTab === 'unverified' || activeTab === 'verified') && (
-                        <th className="py-3 px-4 text-right">Action</th>
-                      )}
+                      <th className="py-3 px-4 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
-                    {filteredRows.map((row) => {
+                    {filteredRows.map((row, rowIndex) => {
                       const ticketInfo = ticketCatalog[Number(row.ticket_id)];
                       const ticketName = ticketInfo?.ticket || `Ticket #${row.ticket_id}`;
                       const amountPaid = ticketInfo ? Number(ticketInfo.price) : 0;
                       const isRowBusy = processingId === row.id;
                       const isDownloadingRow = downloadingId === row.id;
                       const issuedToken = issuedQrTokens[row.id];
+                      const menuKey = `${activeTab}-${row.id}`;
+                      const isMenuOpen = openMenuKey === menuKey;
+                      const openUpward = rowIndex >= filteredRows.length - 2 && filteredRows.length > 2;
 
                       return (
                         <tr key={row.id} className="hover:bg-slate-50/70 transition-colors">
@@ -939,6 +1001,87 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                                     </>
                                   )}
                                 </button>
+
+                                {/* Three-dots Action Menu */}
+                                <div
+                                  className="relative"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setOpenMenuKey(isMenuOpen ? null : menuKey)
+                                    }
+                                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                                    aria-label={`More actions for ${row.name}`}
+                                    aria-expanded={isMenuOpen}
+                                  >
+                                    <MoreVertical className="w-4 h-4" />
+                                  </button>
+
+                                  {isMenuOpen && (
+                                    <div
+                                      className={`absolute right-0 ${
+                                        openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                      } w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-left`}
+                                    >
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenMenuKey(null);
+                                          setDeleteTarget({ table: 'verified', row });
+                                        }}
+                                        className="w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <span>Delete Ticket</span>
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          )}
+
+                          {activeTab === 'rejected' && (
+                            <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                              <div className="inline-flex items-center justify-end">
+                                <div
+                                  className="relative"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setOpenMenuKey(isMenuOpen ? null : menuKey)
+                                    }
+                                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                                    aria-label={`More actions for ${row.name}`}
+                                    aria-expanded={isMenuOpen}
+                                  >
+                                    <MoreVertical className="w-4 h-4" />
+                                  </button>
+
+                                  {isMenuOpen && (
+                                    <div
+                                      className={`absolute right-0 ${
+                                        openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                      } w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-left`}
+                                    >
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenMenuKey(null);
+                                          setDeleteTarget({ table: 'rejected', row });
+                                        }}
+                                        className="w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <span>Delete Ticket</span>
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </td>
                           )}
@@ -954,6 +1097,70 @@ export const AdminPage: React.FC<AdminPageProps> = ({
 
         <PoweredByVespar />
       </main>
+
+      {/* Delete Ticket Confirmation Modal */}
+      {deleteTarget && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-ticket-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn"
+        >
+          <div className="relative w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-slate-100 animate-scaleUp">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2
+                  id="delete-ticket-modal-title"
+                  className="text-base sm:text-lg font-bold text-slate-900"
+                >
+                  Delete Ticket #{deleteTarget.row.id}?
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+                  Are you sure you want to permanently delete{' '}
+                  <span className="font-semibold text-slate-900">
+                    {deleteTarget.row.name}
+                  </span>{' '}
+                  from <span className="font-semibold">{deleteTarget.table}</span>?
+                  {deleteTarget.table === 'verified' &&
+                    ' Any issued QR pass for this entry will also be removed and revoked.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                disabled={deletingId !== null}
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingId !== null}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer inline-flex items-center gap-1.5"
+              >
+                {deletingId !== null ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Ticket</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
