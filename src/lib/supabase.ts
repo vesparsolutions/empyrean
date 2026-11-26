@@ -153,6 +153,7 @@ export interface SendTicketEmailResponse {
   success: boolean;
   verifiedId?: number;
   email?: string;
+  qrCodeId?: string;
   resendEmailId?: string;
   emailSentAt?: string;
   warning?: string;
@@ -182,6 +183,7 @@ export async function sendVerifiedTicketEmail(
       success?: boolean;
       verifiedId?: number;
       email?: string;
+      qrCodeId?: string;
       resendEmailId?: string;
       emailSentAt?: string;
       warning?: string;
@@ -199,6 +201,7 @@ export async function sendVerifiedTicketEmail(
       success: true,
       verifiedId: json.verifiedId,
       email: json.email,
+      qrCodeId: json.qrCodeId,
       resendEmailId: json.resendEmailId,
       emailSentAt: json.emailSentAt,
       warning: json.warning,

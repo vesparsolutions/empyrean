@@ -245,20 +245,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .maybeSingle();
 
     if (passErr) {
-      const msg = `Could not look up existing QR pass in ${passTable}: ${passErr.message}`;
+      const msg = `Could not look up QR pass in ${passTable}: ${passErr.message}`;
       await releaseLockWithError(msg);
       return res.status(500).json({ success: false, error: msg });
     }
 
-    if (!passRow?.qr_code_id) {
-      const msg = `No QR code has been issued yet in ${passTable} for ${record.name}. Please issue/download the ticket QR first.`;
-      await releaseLockWithError(previousError);
-      return res.status(400).json({ success: false, error: msg });
+    let qrCodeId = passRow?.qr_code_id ? String(passRow.qr_code_id) : '';
+
+    // Issue & save a unique QR token into the pass table if not yet issued (same properties as Download Ticket)
+    if (!qrCodeId) {
+      const newToken = crypto.randomUUID();
+      const { error: insertPassErr } = await userSupabase.from(passTable).insert([
+        {
+          verified_id: record.id,
+          name: record.name,
+          email: record.email,
+          ticket_id: Number(record.ticket_id),
+          qr_code_id: newToken,
+        },
+      ]);
+
+      if (insertPassErr) {
+        const msg = `Failed saving QR pass to ${passTable}: ${insertPassErr.message}`;
+        await releaseLockWithError(msg);
+        return res.status(500).json({ success: false, error: msg });
+      }
+
+      qrCodeId = newToken;
     }
 
     // 6. Generate exact ticket PDF on server & attach via Resend
     const pdfBuffer = await generateTicketPdfBuffer({
-      token: String(passRow.qr_code_id),
+      token: qrCodeId,
       passTable,
     });
 
@@ -309,6 +327,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         success: true,
         verifiedId: record.id,
         email: recipientEmail,
+        qrCodeId,
         resendEmailId: sendResult.id,
         emailSentAt: sentAt,
         warning: `Email accepted by Resend (ID: ${sendResult.id}), but failed saving status: ${updateErr.message}`,
@@ -319,6 +338,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       success: true,
       verifiedId: record.id,
       email: recipientEmail,
+      qrCodeId,
       resendEmailId: sendResult.id,
       emailSentAt: sentAt,
     });

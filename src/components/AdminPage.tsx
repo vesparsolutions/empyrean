@@ -359,6 +359,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       return;
     }
 
+    if (result.qrCodeId) {
+      setIssuedQrTokens((prev) => ({ ...prev, [entry.id]: result.qrCodeId! }));
+    }
+
     setVerifiedRows((prev) =>
       prev.map((r) =>
         r.id === entry.id
