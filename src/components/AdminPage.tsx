@@ -17,6 +17,7 @@ import {
   ScanLine,
   MoreVertical,
   Trash2,
+  Send,
 } from 'lucide-react';
 import QRCodeStyling from 'qr-code-styling';
 import { jsPDF } from 'jspdf';
@@ -27,6 +28,7 @@ import {
   fetchAdminTableRecords,
   moveUnverifiedBooking,
   deleteAdminTicketRecord,
+  sendVerifiedTicketEmail,
   fetchIssuedQrTokens,
   ensureAndSaveTicketQrToken,
   type SupabaseTicketRow,
@@ -148,6 +150,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   } | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [sendingId, setSendingId] = useState<number | null>(null);
   const [issuedQrTokens, setIssuedQrTokens] = useState<Record<number, string>>({});
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
@@ -330,6 +333,53 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     setActionBanner({
       type: 'success',
       message: `Deleted #${row.id} (${row.name}) from ${table}.`,
+    });
+  };
+
+  const handleSendTicket = async (entry: TicketRecordRow, resend: boolean = false) => {
+    if (sendingId !== null || !session?.access_token) return;
+    setSendingId(entry.id);
+    setActionBanner(null);
+
+    const result = await sendVerifiedTicketEmail(entry.id, session.access_token, resend);
+    setSendingId(null);
+
+    if (!result.success) {
+      setVerifiedRows((prev) =>
+        prev.map((r) =>
+          r.id === entry.id
+            ? { ...r, email_error: result.errorMessage || 'Failed to send ticket email.' }
+            : r
+        )
+      );
+      setActionBanner({
+        type: 'error',
+        message: result.errorMessage || `Could not send ticket email to ${entry.email}.`,
+      });
+      return;
+    }
+
+    setVerifiedRows((prev) =>
+      prev.map((r) =>
+        r.id === entry.id
+          ? {
+              ...r,
+              email_sent: true,
+              email_sent_at: result.emailSentAt || new Date().toISOString(),
+              resend_email_id: result.resendEmailId || r.resend_email_id || null,
+              email_error: null,
+            }
+          : r
+      )
+    );
+
+    setActionBanner({
+      type: 'success',
+      message:
+        result.warning ||
+        `${resend ? 'Re-sent' : 'Sent'} ticket PDF to ${entry.email} — accepted by Resend (ID: ${
+          result.resendEmailId || 'queued'
+        }).`,
     });
   };
 
@@ -905,7 +955,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                       const amountPaid = ticketInfo ? Number(ticketInfo.price) : 0;
                       const isRowBusy = processingId === row.id;
                       const isDownloadingRow = downloadingId === row.id;
+                      const isSendingRow = sendingId === row.id;
                       const issuedToken = issuedQrTokens[row.id];
+                      const isEmailSent = Boolean(row.email_sent);
+                      const hasSendFailure =
+                        !isEmailSent &&
+                        Boolean(row.email_error) &&
+                        !String(row.email_error).startsWith('sending:');
                       const menuKey = `${activeTab}-${row.id}`;
                       const isMenuOpen = openMenuKey === menuKey;
                       const openUpward = rowIndex >= filteredRows.length - 2 && filteredRows.length > 2;
@@ -983,24 +1039,61 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                                     QR Issued
                                   </span>
                                 )}
-                                <button
-                                  type="button"
-                                  disabled={downloadingId !== null}
-                                  onClick={() => handleDownloadTicket(row)}
-                                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0f172a] hover:bg-black disabled:opacity-50 text-white text-xs font-semibold transition-colors cursor-pointer"
-                                >
-                                  {isDownloadingRow ? (
-                                    <>
-                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                      <span>Generating...</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Download className="w-3.5 h-3.5" />
-                                      <span>Download Ticket</span>
-                                    </>
-                                  )}
-                                </button>
+
+                                {isEmailSent && !isSendingRow && (
+                                  <span
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[10px] font-semibold"
+                                    title={`Accepted by Resend${
+                                      row.email_sent_at
+                                        ? ` at ${new Date(row.email_sent_at).toLocaleString('en-IN')}`
+                                        : ''
+                                    }${row.resend_email_id ? ` (ID: ${row.resend_email_id})` : ''}`}
+                                  >
+                                    <CheckCircle2 className="w-3 h-3" />
+                                    <span>Sent</span>
+                                  </span>
+                                )}
+
+                                {isSendingRow ? (
+                                  <button
+                                    type="button"
+                                    disabled
+                                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0f172a] opacity-65 text-white text-xs font-semibold cursor-not-allowed"
+                                  >
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <span>Sending...</span>
+                                  </button>
+                                ) : isEmailSent ? (
+                                  <button
+                                    type="button"
+                                    disabled={sendingId !== null}
+                                    onClick={() => handleSendTicket(row, true)}
+                                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-900 disabled:opacity-50 text-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                                    title={`Resend ticket PDF to ${row.email}`}
+                                  >
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    <span>Resend Ticket</span>
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    disabled={sendingId !== null}
+                                    onClick={() => handleSendTicket(row, false)}
+                                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg disabled:opacity-50 text-white text-xs font-semibold transition-colors cursor-pointer ${
+                                      hasSendFailure
+                                        ? 'bg-red-600 hover:bg-red-700'
+                                        : 'bg-[#0f172a] hover:bg-black'
+                                    }`}
+                                    title={
+                                      hasSendFailure
+                                        ? `Previous attempt failed: ${row.email_error}`
+                                        : `Send ticket PDF to ${row.email}`
+                                    }
+                                  >
+                                    <Send className="w-3.5 h-3.5" />
+                                    <span>{hasSendFailure ? 'Retry Send' : 'Send Ticket'}</span>
+                                  </button>
+                                )}
 
                                 {/* Three-dots Action Menu */}
                                 <div
@@ -1023,8 +1116,24 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                                     <div
                                       className={`absolute right-0 ${
                                         openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-                                      } w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-left`}
+                                      } w-44 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-left`}
                                     >
+                                      <button
+                                        type="button"
+                                        disabled={downloadingId !== null}
+                                        onClick={() => {
+                                          setOpenMenuKey(null);
+                                          handleDownloadTicket(row);
+                                        }}
+                                        className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer"
+                                      >
+                                        {isDownloadingRow ? (
+                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        ) : (
+                                          <Download className="w-3.5 h-3.5" />
+                                        )}
+                                        <span>Download Ticket PDF</span>
+                                      </button>
                                       <button
                                         type="button"
                                         onClick={() => {

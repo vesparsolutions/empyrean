@@ -1,6 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "trailingSlash": false,
+  "functions": {
+    "api/send-ticket.ts": {
+      "includeFiles": "public/{ticket-templates/*.png,vespar-qr.png}"
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api/).*)",

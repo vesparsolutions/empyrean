@@ -115,6 +115,10 @@ export interface TicketRecordRow {
   college: string;
   ticket_id: number;
   utr_number: string;
+  email_sent?: boolean;
+  email_sent_at?: string | null;
+  resend_email_id?: string | null;
+  email_error?: string | null;
 }
 
 /** Fetches booking rows from `unverified`, `verified`, or `rejected` for authenticated admins. */
@@ -122,20 +126,87 @@ export async function fetchAdminTableRecords(
   table: AdminTicketTable
 ): Promise<{ rows: TicketRecordRow[]; errorMessage?: string }> {
   try {
+    const columns =
+      table === 'verified'
+        ? 'id, name, email, mobile, college, ticket_id, utr_number, email_sent, email_sent_at, resend_email_id, email_error'
+        : 'id, name, email, mobile, college, ticket_id, utr_number';
+
     const { data, error } = await supabase
       .from(table)
-      .select('id, name, email, mobile, college, ticket_id, utr_number')
+      .select(columns)
       .order('id', { ascending: false });
 
     if (error) {
       return { rows: [], errorMessage: error.message };
     }
 
-    return { rows: (data as TicketRecordRow[]) || [] };
+    return { rows: ((data as unknown) as TicketRecordRow[]) || [] };
   } catch (err) {
     return {
       rows: [],
       errorMessage: err instanceof Error ? err.message : 'Unexpected network error',
+    };
+  }
+}
+
+export interface SendTicketEmailResponse {
+  success: boolean;
+  verifiedId?: number;
+  email?: string;
+  resendEmailId?: string;
+  emailSentAt?: string;
+  warning?: string;
+  errorMessage?: string;
+}
+
+/**
+ * Triggers the server-side `/api/send-ticket` endpoint using the authenticated admin's JWT.
+ * All PDF generation and Resend API calls execute exclusively on the server.
+ */
+export async function sendVerifiedTicketEmail(
+  verifiedId: number,
+  accessToken: string,
+  resend: boolean = false
+): Promise<SendTicketEmailResponse> {
+  try {
+    const res = await fetch('/api/send-ticket', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ verifiedId, resend }),
+    });
+
+    const json = (await res.json().catch(() => ({}))) as {
+      success?: boolean;
+      verifiedId?: number;
+      email?: string;
+      resendEmailId?: string;
+      emailSentAt?: string;
+      warning?: string;
+      error?: string;
+    };
+
+    if (!res.ok || !json.success) {
+      return {
+        success: false,
+        errorMessage: json.error || `Request failed with status ${res.status}.`,
+      };
+    }
+
+    return {
+      success: true,
+      verifiedId: json.verifiedId,
+      email: json.email,
+      resendEmailId: json.resendEmailId,
+      emailSentAt: json.emailSentAt,
+      warning: json.warning,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      errorMessage: err instanceof Error ? err.message : 'Network error contacting send-ticket API.',
     };
   }
 }
