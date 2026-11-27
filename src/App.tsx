@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { FestivalNavbar } from './components/FestivalNavbar';
 import { EmpyreanHero } from './components/EmpyreanHero';
 import { DiscoverEmpyrean } from './components/DiscoverEmpyrean';
@@ -20,6 +21,24 @@ export function App() {
   const [selectedTier, setSelectedTier] = useState<string>('Gold All-Access Pass');
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [heroProgress, setHeroProgress] = useState(0);
+  const [welcomePopupOpen, setWelcomePopupOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    const isSubRoute =
+      path === '/scanner' ||
+      path.startsWith('/scanner/') ||
+      hash === '#scanner' ||
+      path === '/admin' ||
+      path.startsWith('/admin/') ||
+      hash === '#admin' ||
+      path === '/tickets' ||
+      path.startsWith('/tickets/') ||
+      hash === '#tickets' ||
+      path === '/partners' ||
+      hash === '#partners';
+    return !isSubRoute;
+  });
   const [currentPage, setCurrentPage] = useState<'home' | 'partners' | 'tickets' | 'admin' | 'scanner'>(() => {
     if (typeof window === 'undefined') return 'home';
     const path = window.location.pathname;
@@ -336,6 +355,52 @@ export function App() {
           setLegalModalTab(tab);
         }}
       />
+
+      {/* 6. Welcome Poster Popup on Landing */}
+      {welcomePopupOpen && currentPage === 'home' && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Empyrean 2026 Announcement"
+          onClick={() => setWelcomePopupOpen(false)}
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-[#071026]/80 backdrop-blur-sm animate-fadeIn"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-[92vw] max-h-[88vh] animate-scaleUp"
+          >
+            <button
+              type="button"
+              onClick={() => setWelcomePopupOpen(false)}
+              aria-label="Close announcement popup"
+              className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/75 hover:bg-black text-white border border-white/25 flex items-center justify-center shadow-lg transition-transform hover:scale-105 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <img
+              src="/hero/welcome-popup.jpg"
+              alt="IIM Jammu brings you to Empyrean - An Era Reimagined - 17 to 19 December"
+              className="block max-h-[82vh] max-w-[90vw] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-[#f8c12c]/35 select-none"
+            />
+            <a
+              href="/tickets"
+              onClick={(e) => {
+                e.preventDefault();
+                setWelcomePopupOpen(false);
+                handleOpenRegistration();
+              }}
+              aria-label="Register for Empyrean 2026"
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 inline-flex items-center justify-center transition-transform duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <img
+                src="/register.png"
+                alt="Register Now"
+                className="h-[72px] sm:h-[88px] w-auto object-contain select-none drop-shadow-[0_6px_18px_rgba(0,0,0,0.7)]"
+              />
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

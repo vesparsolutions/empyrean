@@ -3,7 +3,6 @@ import trikutaImg from '../assets/trikuta.png';
 import {
   MapPin,
   Mail,
-  Phone,
   ExternalLink,
 } from 'lucide-react';
 
@@ -236,6 +235,17 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
             </h4>
             <ul className="space-y-2.5 text-xs sm:text-sm text-[#cbd5e1]/80">
               <li>
+                <a
+                  href="https://www.iimj.ac.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 inline-flex items-center gap-1 text-left text-[#cbd5e1]/85 group"
+                >
+                  <span>IIM Jammu Website</span>
+                  <ExternalLink className="w-3 h-3 text-[#f8c12c]/70 shrink-0 transition-transform group-hover:translate-x-0.5" />
+                </a>
+              </li>
+              <li>
                 <button
                   type="button"
                   onClick={() => (onPartnersClick ? onPartnersClick() : handleScrollTo('sponsors'))}
@@ -261,17 +271,6 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
                 >
                   Visit Campus
                 </button>
-              </li>
-              <li>
-                <a
-                  href="https://www.iimj.ac.in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-[#f8c12c] hover:translate-x-1 transition-all duration-200 inline-flex items-center gap-1 text-left text-[#cbd5e1]/85 group"
-                >
-                  <span>IIM Jammu Website</span>
-                  <ExternalLink className="w-3 h-3 text-[#f8c12c]/70 shrink-0 transition-transform group-hover:translate-x-0.5" />
-                </a>
               </li>
               <li>
                 <button
@@ -333,14 +332,51 @@ export const FestivalFooter: React.FC<FestivalFooterProps> = ({
                 </a>
               </div>
 
-              {/* Phone */}
+              {/* Instagram */}
               <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-[#f8c12c] shrink-0" />
+                <svg
+                  className="w-4 h-4 text-[#f8c12c] shrink-0 fill-none stroke-current"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                </svg>
                 <a
-                  href="tel:+918899012345"
+                  href="https://www.instagram.com/iimj_jammu/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="hover:text-[#f8c12c] transition-colors"
                 >
-                  +91 88990 12345
+                  @iimj_jammu
+                </a>
+              </div>
+
+              {/* LinkedIn */}
+              <div className="flex items-center gap-3">
+                <svg
+                  className="w-4 h-4 text-[#f8c12c] shrink-0 fill-none stroke-current"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                  <rect width="4" height="12" x="2" y="9" />
+                  <circle cx="4" cy="4" r="2" />
+                </svg>
+                <a
+                  href="https://www.linkedin.com/school/iimjammu/posts/?feedView=all"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#f8c12c] transition-colors"
+                >
+                  IIM Jammu (LinkedIn)
                 </a>
               </div>
             </div>
