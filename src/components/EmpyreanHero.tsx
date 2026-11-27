@@ -575,6 +575,29 @@ export const EmpyreanHero: React.FC<EmpyreanHeroProps> = ({
             />
           </div>
 
+          {/* ═══════════════════════════════════════════════════════════════
+              LAYER 10 — IIM Jammu 10 Years Badge (top-left of hero stage)
+              Positioned 2.5% from left, 5% from top; fades out on scroll
+          ═══════════════════════════════════════════════════════════════ */}
+          <div
+            className="absolute z-[10] pointer-events-none select-none"
+            style={{
+              left: '2.5%',
+              top: '5%',
+              width: 'clamp(140px, 16vw, 250px)',
+              opacity: Math.max(0, 1 - logoProgress * 2.5),
+            }}
+          >
+            <img
+              src="/hero/iim-jammu-10-years.png"
+              alt="IIM Jammu — Celebrating 10 Years of Excellence"
+              className="w-full h-auto object-contain block drop-shadow-[0_6px_18px_rgba(0,0,0,0.45)]"
+              loading="eager"
+              decoding="async"
+              draggable={false}
+            />
+          </div>
+
         </div>
       </div>
     </div>

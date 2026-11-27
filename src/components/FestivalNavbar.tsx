@@ -373,6 +373,19 @@ export const FestivalNavbar: React.FC<FestivalNavbarProps> = ({
                 decoding="async"
               />
             </picture>
+
+            {/* Festival Dates Lockup: 10px below main logo, fades out on scroll */}
+            <img
+              src="/hero/dates-17-19-dec.png"
+              alt="17 - 19 December"
+              className="pointer-events-none select-none absolute top-full left-1/2 -translate-x-1/2 mt-[10px] w-[58%] sm:w-[52%] max-w-[360px] h-auto object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.65)]"
+              style={{
+                opacity: Math.max(0, 1 - logoProgress * 2.5),
+                display: logoProgress >= 0.45 ? 'none' : 'block',
+              }}
+              loading="eager"
+              decoding="async"
+            />
           </div>
         </div>
       </div>
