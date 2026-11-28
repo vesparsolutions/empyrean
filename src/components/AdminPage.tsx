@@ -18,6 +18,8 @@ import {
   MoreVertical,
   Trash2,
   Send,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import QRCodeStyling from 'qr-code-styling';
 import { jsPDF } from 'jspdf';
@@ -159,6 +161,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     row: TicketRecordRow;
   } | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [expandedUtrGroups, setExpandedUtrGroups] = useState<Record<string, boolean>>({});
+  const [batchDecisionKey, setBatchDecisionKey] = useState<string | null>(null);
+  const [batchSendState, setBatchSendState] = useState<{
+    groupKey: string;
+    done: number;
+    total: number;
+  } | null>(null);
 
   // Close row three-dots menu when clicking outside or pressing Escape
   useEffect(() => {
@@ -387,6 +396,128 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     });
   };
 
+  const handleBatchDecision = async (
+    groupKey: string,
+    entries: TicketRecordRow[],
+    targetTable: 'verified' | 'rejected'
+  ) => {
+    if (processingId !== null || batchDecisionKey !== null) return;
+    setBatchDecisionKey(groupKey);
+    setActionBanner(null);
+
+    const movedIds = new Set<number>();
+    const insertedRows: TicketRecordRow[] = [];
+    let firstError: string | null = null;
+
+    for (const entry of entries) {
+      const result = await moveUnverifiedBooking(entry, targetTable);
+      if (!result.success) {
+        firstError = firstError || result.errorMessage || `Failed on #${entry.id} (${entry.name}).`;
+        continue;
+      }
+      movedIds.add(entry.id);
+      if (result.insertedRow) {
+        insertedRows.push(result.insertedRow);
+      }
+    }
+
+    if (movedIds.size > 0) {
+      setUnverifiedRows((prev) => prev.filter((r) => !movedIds.has(r.id)));
+      if (insertedRows.length > 0) {
+        if (targetTable === 'verified') {
+          setVerifiedRows((prev) => [...insertedRows, ...prev]);
+        } else {
+          setRejectedRows((prev) => [...insertedRows, ...prev]);
+        }
+      }
+    }
+
+    setBatchDecisionKey(null);
+    const verb = targetTable === 'verified' ? 'Verified' : 'Rejected';
+    if (firstError) {
+      setActionBanner({
+        type: 'error',
+        message: `${verb} ${movedIds.size} of ${entries.length} tickets. Error: ${firstError}`,
+      });
+    } else {
+      setActionBanner({
+        type: 'success',
+        message: `${verb} all ${movedIds.size} tickets for UTR ${entries[0]?.utr_number || ''}.`,
+      });
+    }
+  };
+
+  const handleBatchSendTickets = async (
+    groupKey: string,
+    entries: TicketRecordRow[],
+    resendAll: boolean
+  ) => {
+    if (sendingId !== null || batchSendState !== null || !session?.access_token) return;
+    const targets = resendAll ? entries : entries.filter((e) => !e.email_sent);
+    if (targets.length === 0) return;
+
+    setBatchSendState({ groupKey, done: 0, total: targets.length });
+    setActionBanner(null);
+
+    let successCount = 0;
+    let firstError: string | null = null;
+
+    for (let i = 0; i < targets.length; i++) {
+      const entry = targets[i];
+      const result = await sendVerifiedTicketEmail(
+        entry.id,
+        session.access_token,
+        Boolean(entry.email_sent) || resendAll
+      );
+
+      if (!result.success) {
+        firstError = firstError || result.errorMessage || `Failed sending to ${entry.email}.`;
+        setVerifiedRows((prev) =>
+          prev.map((r) =>
+            r.id === entry.id
+              ? { ...r, email_error: result.errorMessage || 'Failed to send ticket email.' }
+              : r
+          )
+        );
+      } else {
+        successCount += 1;
+        if (result.qrCodeId) {
+          setIssuedQrTokens((prev) => ({ ...prev, [entry.id]: result.qrCodeId! }));
+        }
+        setVerifiedRows((prev) =>
+          prev.map((r) =>
+            r.id === entry.id
+              ? {
+                  ...r,
+                  email_sent: true,
+                  email_sent_at: result.emailSentAt || new Date().toISOString(),
+                  resend_email_id: result.resendEmailId || r.resend_email_id || null,
+                  email_error: null,
+                }
+              : r
+          )
+        );
+      }
+
+      setBatchSendState({ groupKey, done: i + 1, total: targets.length });
+    }
+
+    setBatchSendState(null);
+    if (firstError) {
+      setActionBanner({
+        type: 'error',
+        message: `Sent ${successCount} of ${targets.length} tickets. Error: ${firstError}`,
+      });
+    } else {
+      setActionBanner({
+        type: 'success',
+        message: `${resendAll ? 'Re-sent' : 'Sent'} all ${successCount} ticket PDFs for UTR ${
+          entries[0]?.utr_number || ''
+        }.`,
+      });
+    }
+  };
+
   const handleDownloadTicket = async (entry: TicketRecordRow) => {
     if (downloadingId !== null) return;
     setDownloadingId(entry.id);
@@ -566,6 +697,47 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       rows.reduce((sum, r) => sum + Number(ticketCatalog[Number(r.ticket_id)]?.price || 0), 0),
     [ticketCatalog]
   );
+
+  // Group rows sharing the exact same non-empty UTR so multi-ticket orders show total amount & batch actions
+  const utrGroups = useMemo(() => {
+    const groups: {
+      key: string;
+      utr: string;
+      rows: TicketRecordRow[];
+      totalAmount: number;
+    }[] = [];
+    const indexByKey = new Map<string, number>();
+
+    for (const row of filteredRows) {
+      const normalizedUtr = row.utr_number.trim();
+      const groupKey = normalizedUtr ? `${activeTab}::${normalizedUtr}` : `${activeTab}::single-${row.id}`;
+      const price = Number(ticketCatalog[Number(row.ticket_id)]?.price || 0);
+      const existingIdx = indexByKey.get(groupKey);
+      if (existingIdx !== undefined) {
+        groups[existingIdx].rows.push(row);
+        groups[existingIdx].totalAmount += price;
+      } else {
+        indexByKey.set(groupKey, groups.length);
+        groups.push({
+          key: groupKey,
+          utr: row.utr_number,
+          rows: [row],
+          totalAmount: price,
+        });
+      }
+    }
+
+    return groups;
+  }, [filteredRows, activeTab, ticketCatalog]);
+
+  const verifiedUtrSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of verifiedRows) {
+      const norm = r.utr_number.trim().toLowerCase();
+      if (norm) set.add(norm);
+    }
+    return set;
+  }, [verifiedRows]);
 
   // ---------------------------------------------------------------------------
   // AUTH LOADING SCREEN
@@ -953,252 +1125,471 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
-                    {filteredRows.map((row, rowIndex) => {
-                      const ticketInfo = ticketCatalog[Number(row.ticket_id)];
-                      const ticketName = ticketInfo?.ticket || `Ticket #${row.ticket_id}`;
-                      const amountPaid = ticketInfo ? Number(ticketInfo.price) : 0;
-                      const isRowBusy = processingId === row.id;
-                      const isDownloadingRow = downloadingId === row.id;
-                      const isSendingRow = sendingId === row.id;
-                      const issuedToken = issuedQrTokens[row.id];
-                      const isEmailSent = Boolean(row.email_sent);
-                      const hasSendFailure =
-                        !isEmailSent &&
-                        Boolean(row.email_error) &&
-                        !String(row.email_error).startsWith('sending:');
-                      const menuKey = `${activeTab}-${row.id}`;
-                      const isMenuOpen = openMenuKey === menuKey;
-                      const openUpward = rowIndex >= filteredRows.length - 2 && filteredRows.length > 2;
+                    {utrGroups.map((group, groupIndex) => {
+                      const renderTicketRow = (
+                        row: TicketRecordRow,
+                        openUpward: boolean,
+                        isNested: boolean = false
+                      ) => {
+                        const ticketInfo = ticketCatalog[Number(row.ticket_id)];
+                        const ticketName = ticketInfo?.ticket || `Ticket #${row.ticket_id}`;
+                        const amountPaid = ticketInfo ? Number(ticketInfo.price) : 0;
+                        const isRowBusy = processingId === row.id;
+                        const isDownloadingRow = downloadingId === row.id;
+                        const isSendingRow = sendingId === row.id;
+                        const issuedToken = issuedQrTokens[row.id];
+                        const isEmailSent = Boolean(row.email_sent);
+                        const hasSendFailure =
+                          !isEmailSent &&
+                          Boolean(row.email_error) &&
+                          !String(row.email_error).startsWith('sending:');
+                        const menuKey = `${activeTab}-${row.id}`;
+                        const isMenuOpen = openMenuKey === menuKey;
+
+                        return (
+                          <tr
+                            key={row.id}
+                            className={`transition-colors ${
+                              isNested ? 'bg-slate-50/75 hover:bg-slate-100/70' : 'hover:bg-slate-50/70'
+                            }`}
+                          >
+                            <td className="py-3.5 px-4 font-mono text-xs font-semibold text-slate-500 whitespace-nowrap">
+                              {isNested && <span className="text-slate-300 mr-1.5">└</span>}#{row.id}
+                            </td>
+
+                            <td className="py-3.5 px-4 min-w-[210px]">
+                              <div className="font-semibold text-slate-900">{row.name}</div>
+                              <div className="text-xs text-slate-500 mt-0.5">
+                                {row.email} • {row.mobile}
+                              </div>
+                              <div className="text-[11px] text-slate-400 mt-0.5">
+                                {row.college}
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 text-xs font-semibold">
+                                {ticketName}
+                              </span>
+                            </td>
+
+                            <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
+                              {ticketInfo ? formatINR(amountPaid) : '—'}
+                            </td>
+
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="inline-block font-mono text-xs font-semibold bg-[#f8fafc] border border-slate-200 text-slate-800 px-2.5 py-1 rounded">
+                                {row.utr_number}
+                              </span>
+                              {activeTab === 'unverified' &&
+                                verifiedUtrSet.has(row.utr_number.trim().toLowerCase()) && (
+                                  <div className="mt-1">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-50 border border-red-200 text-red-700 text-[10px] font-semibold">
+                                      <AlertCircle className="w-3 h-3 shrink-0" />
+                                      <span>Duplicate UPI error</span>
+                                    </span>
+                                  </div>
+                                )}
+                            </td>
+
+                            {activeTab === 'unverified' && (
+                              <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                <div className="inline-flex items-center justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    disabled={processingId !== null || batchDecisionKey !== null}
+                                    onClick={() => handleDecision(row, 'verified')}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold transition-colors cursor-pointer"
+                                  >
+                                    {isRowBusy ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                                    )}
+                                    <span>Accept</span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    disabled={processingId !== null || batchDecisionKey !== null}
+                                    onClick={() => handleDecision(row, 'rejected')}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-600 hover:text-white hover:border-red-600 disabled:opacity-50 text-red-700 text-xs font-semibold transition-colors cursor-pointer"
+                                  >
+                                    <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                                    <span>Reject</span>
+                                  </button>
+                                </div>
+                              </td>
+                            )}
+
+                            {activeTab === 'verified' && (
+                              <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                <div className="inline-flex items-center justify-end gap-2">
+                                  {issuedToken && (
+                                    <span
+                                      className="hidden xl:inline-block px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[10px] font-semibold"
+                                      title={`QR Token: ${issuedToken}`}
+                                    >
+                                      QR Issued
+                                    </span>
+                                  )}
+
+                                  {isEmailSent && !isSendingRow && (
+                                    <span
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[10px] font-semibold"
+                                      title={`Accepted by Resend${
+                                        row.email_sent_at
+                                          ? ` at ${new Date(row.email_sent_at).toLocaleString('en-IN')}`
+                                          : ''
+                                      }${row.resend_email_id ? ` (ID: ${row.resend_email_id})` : ''}`}
+                                    >
+                                      <CheckCircle2 className="w-3 h-3" />
+                                      <span>Sent</span>
+                                    </span>
+                                  )}
+
+                                  {isSendingRow ? (
+                                    <button
+                                      type="button"
+                                      disabled
+                                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0f172a] opacity-65 text-white text-xs font-semibold cursor-not-allowed"
+                                    >
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      <span>Sending...</span>
+                                    </button>
+                                  ) : isEmailSent ? (
+                                    <button
+                                      type="button"
+                                      disabled={sendingId !== null || batchSendState !== null}
+                                      onClick={() => handleSendTicket(row, true)}
+                                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-900 disabled:opacity-50 text-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                                      title={`Resend ticket PDF to ${row.email}`}
+                                    >
+                                      <RefreshCw className="w-3.5 h-3.5" />
+                                      <span>Resend Ticket</span>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      disabled={sendingId !== null || batchSendState !== null}
+                                      onClick={() => handleSendTicket(row, false)}
+                                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg disabled:opacity-50 text-white text-xs font-semibold transition-colors cursor-pointer ${
+                                        hasSendFailure
+                                          ? 'bg-red-600 hover:bg-red-700'
+                                          : 'bg-[#0f172a] hover:bg-black'
+                                      }`}
+                                      title={
+                                        hasSendFailure
+                                          ? `Previous attempt failed: ${row.email_error}`
+                                          : `Send ticket PDF to ${row.email}`
+                                      }
+                                    >
+                                      <Send className="w-3.5 h-3.5" />
+                                      <span>{hasSendFailure ? 'Retry Send' : 'Send Ticket'}</span>
+                                    </button>
+                                  )}
+
+                                  {/* Three-dots Action Menu */}
+                                  <div
+                                    className="relative"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setOpenMenuKey(isMenuOpen ? null : menuKey)
+                                      }
+                                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                                      aria-label={`More actions for ${row.name}`}
+                                      aria-expanded={isMenuOpen}
+                                    >
+                                      <MoreVertical className="w-4 h-4" />
+                                    </button>
+
+                                    {isMenuOpen && (
+                                      <div
+                                        className={`absolute right-0 ${
+                                          openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                        } w-44 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-left`}
+                                      >
+                                        <button
+                                          type="button"
+                                          disabled={downloadingId !== null}
+                                          onClick={() => {
+                                            setOpenMenuKey(null);
+                                            handleDownloadTicket(row);
+                                          }}
+                                          className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer"
+                                        >
+                                          {isDownloadingRow ? (
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                          ) : (
+                                            <Download className="w-3.5 h-3.5" />
+                                          )}
+                                          <span>Download Ticket PDF</span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setOpenMenuKey(null);
+                                            setDeleteTarget({ table: 'verified', row });
+                                          }}
+                                          className="w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                          <span>Delete Ticket</span>
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                            )}
+
+                            {activeTab === 'rejected' && (
+                              <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                <div className="inline-flex items-center justify-end">
+                                  <div
+                                    className="relative"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setOpenMenuKey(isMenuOpen ? null : menuKey)
+                                      }
+                                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                                      aria-label={`More actions for ${row.name}`}
+                                      aria-expanded={isMenuOpen}
+                                    >
+                                      <MoreVertical className="w-4 h-4" />
+                                    </button>
+
+                                    {isMenuOpen && (
+                                      <div
+                                        className={`absolute right-0 ${
+                                          openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                        } w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-left`}
+                                      >
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setOpenMenuKey(null);
+                                            setDeleteTarget({ table: 'rejected', row });
+                                          }}
+                                          className="w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                          <span>Delete Ticket</span>
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      };
+
+                      if (group.rows.length === 1) {
+                        const openUpward = groupIndex >= utrGroups.length - 2 && utrGroups.length > 2;
+                        return renderTicketRow(group.rows[0], openUpward, false);
+                      }
+
+                      const first = group.rows[0];
+                      const isExpanded = Boolean(expandedUtrGroups[group.key]);
+                      const extraCount = group.rows.length - 1;
+                      const distinctTicketNames = Array.from(
+                        new Set(
+                          group.rows.map(
+                            (r) => ticketCatalog[Number(r.ticket_id)]?.ticket || `Ticket #${r.ticket_id}`
+                          )
+                        )
+                      );
+                      const groupTicketSummary =
+                        distinctTicketNames.length === 1
+                          ? `${distinctTicketNames[0]} × ${group.rows.length}`
+                          : `${group.rows.length} Tickets (Mixed)`;
+
+                      const isBatchDeciding = batchDecisionKey === group.key;
+                      const isBatchSending = batchSendState?.groupKey === group.key;
+                      const allSentInGroup = group.rows.every((r) => Boolean(r.email_sent));
+                      const sentCountInGroup = group.rows.filter((r) => Boolean(r.email_sent)).length;
 
                       return (
-                        <tr key={row.id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-3.5 px-4 font-mono text-xs font-semibold text-slate-500 whitespace-nowrap">
-                            #{row.id}
-                          </td>
+                        <React.Fragment key={group.key}>
+                          <tr className="bg-amber-50/35 hover:bg-amber-50/60 transition-colors">
+                            <td className="py-3.5 px-4 font-mono text-xs font-semibold text-slate-600 whitespace-nowrap">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-100/80 text-amber-900 border border-amber-200/80 text-[11px] font-bold">
+                                {group.rows.length}x
+                              </span>
+                            </td>
 
-                          <td className="py-3.5 px-4 min-w-[210px]">
-                            <div className="font-semibold text-slate-900">{row.name}</div>
-                            <div className="text-xs text-slate-500 mt-0.5">
-                              {row.email} • {row.mobile}
-                            </div>
-                            <div className="text-[11px] text-slate-400 mt-0.5">
-                              {row.college}
-                            </div>
-                          </td>
-
-                          <td className="py-3.5 px-4 whitespace-nowrap">
-                            <span className="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 text-xs font-semibold">
-                              {ticketName}
-                            </span>
-                          </td>
-
-                          <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
-                            {ticketInfo ? formatINR(amountPaid) : '—'}
-                          </td>
-
-                          <td className="py-3.5 px-4 whitespace-nowrap">
-                            <span className="inline-block font-mono text-xs font-semibold bg-[#f8fafc] border border-slate-200 text-slate-800 px-2.5 py-1 rounded">
-                              {row.utr_number}
-                            </span>
-                          </td>
-
-                          {activeTab === 'unverified' && (
-                            <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                              <div className="inline-flex items-center justify-end gap-2">
+                            <td className="py-3.5 px-4 min-w-[230px]">
+                              <div className="flex items-center gap-2">
                                 <button
                                   type="button"
-                                  disabled={processingId !== null}
-                                  onClick={() => handleDecision(row, 'verified')}
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold transition-colors cursor-pointer"
+                                  onClick={() =>
+                                    setExpandedUtrGroups((prev) => ({
+                                      ...prev,
+                                      [group.key]: !prev[group.key],
+                                    }))
+                                  }
+                                  className="inline-flex items-center gap-1.5 text-left font-semibold text-slate-900 hover:text-black cursor-pointer group"
+                                  aria-expanded={isExpanded}
+                                  title={isExpanded ? 'Collapse tickets' : 'Expand all tickets in this UTR'}
                                 >
-                                  {isRowBusy ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  <span className="w-5 h-5 rounded-md bg-white border border-slate-200 group-hover:border-slate-400 flex items-center justify-center shrink-0">
+                                    {isExpanded ? (
+                                      <ChevronDown className="w-3.5 h-3.5 text-slate-700" />
+                                    ) : (
+                                      <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
+                                    )}
+                                  </span>
+                                  <span>{first.name}</span>
+                                  <span className="px-1.5 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-bold leading-none">
+                                    +{extraCount}
+                                  </span>
+                                </button>
+                              </div>
+                              <div className="text-xs text-slate-500 mt-0.5 pl-6">
+                                {first.email} • {first.mobile}
+                              </div>
+                              <div className="text-[11px] text-slate-400 mt-0.5 pl-6">
+                                Click arrow to view all {group.rows.length} passes
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="inline-block px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-800 text-xs font-semibold">
+                                {groupTicketSummary}
+                              </span>
+                            </td>
+
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <div className="font-bold text-slate-900">{formatINR(group.totalAmount)}</div>
+                              <div className="text-[10px] font-medium text-slate-500">
+                                Total for {group.rows.length} passes
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <span className="inline-block font-mono text-xs font-semibold bg-white border border-slate-200 text-slate-800 px-2.5 py-1 rounded">
+                                {group.utr}
+                              </span>
+                              {activeTab === 'unverified' &&
+                                verifiedUtrSet.has(group.utr.trim().toLowerCase()) && (
+                                  <div className="mt-1">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-50 border border-red-200 text-red-700 text-[10px] font-semibold">
+                                      <AlertCircle className="w-3 h-3 shrink-0" />
+                                      <span>Duplicate UPI error</span>
+                                    </span>
+                                  </div>
+                                )}
+                            </td>
+
+                            {activeTab === 'unverified' && (
+                              <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                <div className="inline-flex items-center justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    disabled={processingId !== null || batchDecisionKey !== null}
+                                    onClick={() =>
+                                      handleBatchDecision(group.key, group.rows, 'verified')
+                                    }
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-semibold transition-colors cursor-pointer"
+                                  >
+                                    {isBatchDeciding ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                                    )}
+                                    <span>Verify All ({group.rows.length})</span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    disabled={processingId !== null || batchDecisionKey !== null}
+                                    onClick={() =>
+                                      handleBatchDecision(group.key, group.rows, 'rejected')
+                                    }
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-600 hover:text-white hover:border-red-600 disabled:opacity-50 text-red-700 text-xs font-semibold transition-colors cursor-pointer"
+                                  >
+                                    <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                                    <span>Reject All</span>
+                                  </button>
+                                </div>
+                              </td>
+                            )}
+
+                            {activeTab === 'verified' && (
+                              <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                <div className="inline-flex items-center justify-end gap-2">
+                                  {allSentInGroup && !isBatchSending && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[10px] font-semibold">
+                                      <CheckCircle2 className="w-3 h-3" />
+                                      <span>All Sent</span>
+                                    </span>
+                                  )}
+
+                                  {isBatchSending ? (
+                                    <button
+                                      type="button"
+                                      disabled
+                                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0f172a] opacity-65 text-white text-xs font-semibold cursor-not-allowed"
+                                    >
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      <span>
+                                        Sending {batchSendState.done}/{batchSendState.total}...
+                                      </span>
+                                    </button>
+                                  ) : allSentInGroup ? (
+                                    <button
+                                      type="button"
+                                      disabled={sendingId !== null || batchSendState !== null}
+                                      onClick={() =>
+                                        handleBatchSendTickets(group.key, group.rows, true)
+                                      }
+                                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-900 disabled:opacity-50 text-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                                    >
+                                      <RefreshCw className="w-3.5 h-3.5" />
+                                      <span>Resend All ({group.rows.length})</span>
+                                    </button>
                                   ) : (
-                                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                                  )}
-                                  <span>Accept</span>
-                                </button>
-
-                                <button
-                                  type="button"
-                                  disabled={processingId !== null}
-                                  onClick={() => handleDecision(row, 'rejected')}
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-600 hover:text-white hover:border-red-600 disabled:opacity-50 text-red-700 text-xs font-semibold transition-colors cursor-pointer"
-                                >
-                                  <X className="w-3.5 h-3.5 stroke-[2.5]" />
-                                  <span>Reject</span>
-                                </button>
-                              </div>
-                            </td>
-                          )}
-
-                          {activeTab === 'verified' && (
-                            <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                              <div className="inline-flex items-center justify-end gap-2">
-                                {issuedToken && (
-                                  <span
-                                    className="hidden xl:inline-block px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[10px] font-semibold"
-                                    title={`QR Token: ${issuedToken}`}
-                                  >
-                                    QR Issued
-                                  </span>
-                                )}
-
-                                {isEmailSent && !isSendingRow && (
-                                  <span
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[10px] font-semibold"
-                                    title={`Accepted by Resend${
-                                      row.email_sent_at
-                                        ? ` at ${new Date(row.email_sent_at).toLocaleString('en-IN')}`
-                                        : ''
-                                    }${row.resend_email_id ? ` (ID: ${row.resend_email_id})` : ''}`}
-                                  >
-                                    <CheckCircle2 className="w-3 h-3" />
-                                    <span>Sent</span>
-                                  </span>
-                                )}
-
-                                {isSendingRow ? (
-                                  <button
-                                    type="button"
-                                    disabled
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0f172a] opacity-65 text-white text-xs font-semibold cursor-not-allowed"
-                                  >
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                    <span>Sending...</span>
-                                  </button>
-                                ) : isEmailSent ? (
-                                  <button
-                                    type="button"
-                                    disabled={sendingId !== null}
-                                    onClick={() => handleSendTicket(row, true)}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-900 disabled:opacity-50 text-slate-800 text-xs font-semibold transition-colors cursor-pointer"
-                                    title={`Resend ticket PDF to ${row.email}`}
-                                  >
-                                    <RefreshCw className="w-3.5 h-3.5" />
-                                    <span>Resend Ticket</span>
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    disabled={sendingId !== null}
-                                    onClick={() => handleSendTicket(row, false)}
-                                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg disabled:opacity-50 text-white text-xs font-semibold transition-colors cursor-pointer ${
-                                      hasSendFailure
-                                        ? 'bg-red-600 hover:bg-red-700'
-                                        : 'bg-[#0f172a] hover:bg-black'
-                                    }`}
-                                    title={
-                                      hasSendFailure
-                                        ? `Previous attempt failed: ${row.email_error}`
-                                        : `Send ticket PDF to ${row.email}`
-                                    }
-                                  >
-                                    <Send className="w-3.5 h-3.5" />
-                                    <span>{hasSendFailure ? 'Retry Send' : 'Send Ticket'}</span>
-                                  </button>
-                                )}
-
-                                {/* Three-dots Action Menu */}
-                                <div
-                                  className="relative"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setOpenMenuKey(isMenuOpen ? null : menuKey)
-                                    }
-                                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                                    aria-label={`More actions for ${row.name}`}
-                                    aria-expanded={isMenuOpen}
-                                  >
-                                    <MoreVertical className="w-4 h-4" />
-                                  </button>
-
-                                  {isMenuOpen && (
-                                    <div
-                                      className={`absolute right-0 ${
-                                        openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-                                      } w-44 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-left`}
+                                    <button
+                                      type="button"
+                                      disabled={sendingId !== null || batchSendState !== null}
+                                      onClick={() =>
+                                        handleBatchSendTickets(group.key, group.rows, false)
+                                      }
+                                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0f172a] hover:bg-black disabled:opacity-50 text-white text-xs font-semibold transition-colors cursor-pointer"
                                     >
-                                      <button
-                                        type="button"
-                                        disabled={downloadingId !== null}
-                                        onClick={() => {
-                                          setOpenMenuKey(null);
-                                          handleDownloadTicket(row);
-                                        }}
-                                        className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer"
-                                      >
-                                        {isDownloadingRow ? (
-                                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                        ) : (
-                                          <Download className="w-3.5 h-3.5" />
-                                        )}
-                                        <span>Download Ticket PDF</span>
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setOpenMenuKey(null);
-                                          setDeleteTarget({ table: 'verified', row });
-                                        }}
-                                        className="w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                        <span>Delete Ticket</span>
-                                      </button>
-                                    </div>
+                                      <Send className="w-3.5 h-3.5" />
+                                      <span>
+                                        Send to All ({group.rows.length - sentCountInGroup})
+                                      </span>
+                                    </button>
                                   )}
                                 </div>
-                              </div>
-                            </td>
-                          )}
+                              </td>
+                            )}
 
-                          {activeTab === 'rejected' && (
-                            <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                              <div className="inline-flex items-center justify-end">
-                                <div
-                                  className="relative"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setOpenMenuKey(isMenuOpen ? null : menuKey)
-                                    }
-                                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                                    aria-label={`More actions for ${row.name}`}
-                                    aria-expanded={isMenuOpen}
-                                  >
-                                    <MoreVertical className="w-4 h-4" />
-                                  </button>
+                            {activeTab === 'rejected' && (
+                              <td className="py-3.5 px-4 text-right whitespace-nowrap text-xs text-slate-400">
+                                Expand to manage
+                              </td>
+                            )}
+                          </tr>
 
-                                  {isMenuOpen && (
-                                    <div
-                                      className={`absolute right-0 ${
-                                        openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-                                      } w-40 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-30 text-left`}
-                                    >
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setOpenMenuKey(null);
-                                          setDeleteTarget({ table: 'rejected', row });
-                                        }}
-                                        className="w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                        <span>Delete Ticket</span>
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-                          )}
-                        </tr>
+                          {isExpanded &&
+                            group.rows.map((childRow, childIdx) => {
+                              const isNearBottom =
+                                groupIndex >= utrGroups.length - 1 &&
+                                childIdx >= group.rows.length - 2;
+                              return renderTicketRow(childRow, isNearBottom, true);
+                            })}
+                        </React.Fragment>
                       );
                     })}
                   </tbody>
